@@ -1,10 +1,8 @@
 package com.pewick.calllogger.activity;
 
 import android.Manifest;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
@@ -14,14 +12,15 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.MotionEvent;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.pewick.calllogger.R;
 import com.pewick.calllogger.adapters.ListPagerAdapter;
@@ -49,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
 
     private ImageView optionsIcon;
 
+    private PopupMenu numbersPopUp;
+    private PopupMenu historyPopUp;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,18 +61,135 @@ public class MainActivity extends AppCompatActivity {
         this.setUpNavigationBar();
         this.setUpViewPager();
         this.setUpSearch();
+        this.setUpOptionsMenu();
 //        this.setUpViewPager();
     }
 
     private void setUpOptionsMenu(){
         this.optionsIcon = (ImageView)findViewById(R.id.options_icon);
+        this.setUpHistoryPopUp();
+        this.setUpNumbersPopUp();
 
         optionsIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "Options Icon clicked");
-
                 //Show a different menu, depending on which page is displayed
+                if(pager.getCurrentItem() == 0){
+                    //On number fragment
+                    numbersPopUp.show();
+                } else {
+                    //On history fragment
+                    historyPopUp.show();
+                }
+            }
+        });
+    }
+
+    private void setUpHistoryPopUp(){
+        historyPopUp = new PopupMenu(this, optionsIcon);
+        MenuInflater inflater = historyPopUp.getMenuInflater();
+        inflater.inflate(R.menu.options_menu_history, historyPopUp.getMenu());
+        historyPopUp.getMenu().getItem(0).setChecked(true);
+        historyPopUp.getMenu().getItem(1).setChecked(true);
+        historyPopUp.getMenu().getItem(2).setChecked(true);
+        historyPopUp.getMenu().getItem(3).setChecked(true);
+
+        historyPopUp.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+
+                switch(menuItem.getItemId()){
+                    case R.id.contacts:
+                        //Filter by contacts
+                        menuItem.setChecked(!menuItem.isChecked());
+                        break;
+                    case R.id.non_contacts:
+                        //Filter by contacts
+                        menuItem.setChecked(!menuItem.isChecked());
+                        break;
+                    case R.id.incoming:
+                        //Filter by contacts
+                        menuItem.setChecked(!menuItem.isChecked());
+                        break;
+                    case R.id.outgoing:
+                        //Filter by contacts
+                        menuItem.setChecked(!menuItem.isChecked());
+                        break;
+                }
+
+                String text = searchField.getText().toString();
+                boolean contactsF = historyPopUp.getMenu().getItem(0).isChecked();
+                boolean noncontactsF = historyPopUp.getMenu().getItem(1).isChecked();
+                boolean incomingF = historyPopUp.getMenu().getItem(2).isChecked();
+                boolean outgoingF = historyPopUp.getMenu().getItem(3).isChecked();
+                ((HistoryFragment)((ListPagerAdapter) pager.getAdapter()).getCurrentFragment())
+                        .filterList(text,contactsF, noncontactsF, incomingF, outgoingF);
+
+                // Keep the popup menu open
+                menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+                menuItem.setActionView(new View(getApplicationContext()));
+                menuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+                    @Override
+                    public boolean onMenuItemActionExpand(MenuItem item) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onMenuItemActionCollapse(MenuItem item) {
+                        return false;
+                    }
+                });
+
+                return false;
+            }
+        });
+    }
+
+    private void setUpNumbersPopUp(){
+        numbersPopUp = new PopupMenu(this, optionsIcon);
+        MenuInflater inflater = numbersPopUp.getMenuInflater();
+        inflater.inflate(R.menu.options_menu_numbers, numbersPopUp.getMenu());
+        numbersPopUp.getMenu().getItem(0).setChecked(true);
+        numbersPopUp.getMenu().getItem(1).setChecked(true);
+
+        numbersPopUp.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+
+                switch(menuItem.getItemId()){
+                    case R.id.contacts:
+                        //Filter by contacts
+                        menuItem.setChecked(!menuItem.isChecked());
+                        break;
+                    case R.id.non_contacts:
+                        //Filter by contacts
+                        menuItem.setChecked(!menuItem.isChecked());
+                        break;
+                }
+
+                String text = searchField.getText().toString();
+                boolean contactsF = numbersPopUp.getMenu().getItem(0).isChecked();
+                boolean noncontactsF = numbersPopUp.getMenu().getItem(1).isChecked();
+                ((NumbersFragment)((ListPagerAdapter) pager.getAdapter()).getCurrentFragment())
+                        .filterList(text,contactsF, noncontactsF);
+
+                // Keep the popup menu open
+                menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+                menuItem.setActionView(new View(getApplicationContext()));
+                menuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+                    @Override
+                    public boolean onMenuItemActionExpand(MenuItem item) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onMenuItemActionCollapse(MenuItem item) {
+                        return false;
+                    }
+                });
+
+                return false;
             }
         });
     }
@@ -142,7 +261,11 @@ public class MainActivity extends AppCompatActivity {
         clearSearchIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                searchField.setText("");
+                if(searchField.getText().toString().equals("")){
+                    endSearch();
+                } else {
+                    searchField.setText("");
+                }
             }
         });
 
@@ -165,9 +288,19 @@ public class MainActivity extends AppCompatActivity {
 
                 //Now, make a call to the appropriate fragment, passing the text to filter the list
                 if(pager.getCurrentItem() == 0){
-                    ((NumbersFragment)((ListPagerAdapter) pager.getAdapter()).getCurrentFragment()).filterList(text);
+                    boolean contactsF = numbersPopUp.getMenu().getItem(0).isChecked();
+                    boolean noncontactsF = numbersPopUp.getMenu().getItem(1).isChecked();
+                    ((NumbersFragment)((ListPagerAdapter) pager.getAdapter()).getCurrentFragment())
+                            .filterList(text, contactsF, noncontactsF);
                 } else {
-                    ((HistoryFragment)((ListPagerAdapter) pager.getAdapter()).getCurrentFragment()).filterList(text);
+//                    ((HistoryFragment)((ListPagerAdapter) pager.getAdapter()).getCurrentFragment()).filterList(text);
+
+                    boolean contactsF = historyPopUp.getMenu().getItem(0).isChecked();
+                    boolean noncontactsF = historyPopUp.getMenu().getItem(1).isChecked();
+                    boolean incomingF = historyPopUp.getMenu().getItem(2).isChecked();
+                    boolean outgoingF = historyPopUp.getMenu().getItem(3).isChecked();
+                    ((HistoryFragment)((ListPagerAdapter) pager.getAdapter()).getCurrentFragment())
+                            .filterList(text,contactsF, noncontactsF, incomingF, outgoingF);
                 }
             }
         });

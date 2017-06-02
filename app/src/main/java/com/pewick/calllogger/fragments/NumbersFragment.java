@@ -43,14 +43,17 @@ public class NumbersFragment extends Fragment {
 
     private ArrayList<NumberItem> numbersList;
     private ArrayList<NumberItem> numbersListOriginal;
+    private ArrayList<NumberItem> numberContactList;
+    private ArrayList<NumberItem> numberNonContactList;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_history_list, container, false);
 
-        this.readNumbersFromDatabase();
+//        this.readNumbersFromDatabase();
 
+        numbersList = new ArrayList<>();
         numbersListView = (ListView) view.findViewById(R.id.history_list);
         adapter = new NumbersListAdapter(getActivity(),numbersList);
         numbersListView.setAdapter(adapter);
@@ -62,21 +65,35 @@ public class NumbersFragment extends Fragment {
     public void onResume() {
         Log.i(TAG, "onResume");
         super.onResume();
-//        this.readNumbersFromDatabase();
+        this.readNumbersFromDatabase();
         adapter = new NumbersListAdapter(getActivity(),numbersList);
         numbersListView.setAdapter(adapter);
     }
 
-    public void filterList(String charText) {
-        Log.i(TAG, "FilterList called: "+charText);
-        charText = charText.toLowerCase(Locale.getDefault());
+    public void filterList(String charText, boolean contacts, boolean nonContacts) {
+        Log.i(TAG, "filterList:");
+        Log.i(TAG, "    chatText: " + charText);
+        Log.i(TAG, "    contacts: " + contacts);
+        Log.i(TAG, "    nonContacts: " + nonContacts);
+        ArrayList<NumberItem> temp = new ArrayList<>();
         numbersList.clear();
-        if (charText.length() == 0) {
-            numbersList.addAll(numbersListOriginal);
-        } else {
-            for (int i = 0; i < numbersListOriginal.size(); i++) {
-                NumberItem entry = numbersListOriginal.get(i);
-                if(Long.toString(entry.getNumber()).contains(charText)){
+
+        if(contacts && nonContacts){
+            temp.addAll(numbersListOriginal);
+        } else if(contacts){
+            temp.addAll(numberContactList);
+        } else if(nonContacts){
+            temp.addAll(numberNonContactList);
+        }
+
+        if(charText.length() == 0){
+            numbersList.addAll(temp);
+        } else{
+            for (int i = 0; i < temp.size(); i++) {
+                NumberItem entry = temp.get(i);
+                if(Long.toString(entry.getNumber()).contains(charText)
+                        || (entry.getContactName() != null
+                        && entry.getContactName().toLowerCase().contains(charText.toLowerCase()))){
 //                    Log.i("Number", "number matched: "+entry.getNumber());
                     numbersList.add(entry);
                 }
@@ -151,6 +168,8 @@ public class NumbersFragment extends Fragment {
     private void readNumbersFromDatabase(){
         numbersList = new ArrayList<>();
         numbersListOriginal = new ArrayList<>();
+        numberContactList = new ArrayList<>();
+        numberNonContactList = new ArrayList<>();
         dbHelper = DbHelper.getInstance(getActivity());
         database = dbHelper.getReadableDatabase();
         String[] projection = {
@@ -179,6 +198,14 @@ public class NumbersFragment extends Fragment {
                         cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.MOST_RECENT)),
                         contact,
                         cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NOTES)));
+
+                if(existingNumber.getContactName() != null){
+                    //then the number is in contacts
+                    numberContactList.add(existingNumber);
+                } else{
+                    //then the number is NOT in contacts
+                    numberNonContactList.add(existingNumber);
+                }
 
                 //cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.CONTACT_NAME))
 

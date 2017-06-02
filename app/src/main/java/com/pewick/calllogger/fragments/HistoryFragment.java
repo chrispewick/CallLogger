@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.telecom.Call;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -43,14 +44,17 @@ public class HistoryFragment extends Fragment {
 
     private ArrayList<CallItem> callList;
     private ArrayList<CallItem> callListOriginal;
+    private ArrayList<CallItem> contactsCallList;
+    private ArrayList<CallItem> noncontactsCallList;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_history_list, container, false);
 
-        this.readCallsFromDatabase();
+//        this.readCallsFromDatabase();
 
+        callList = new ArrayList<>();
         callListView = (ListView) view.findViewById(R.id.history_list);
         adapter = new HistoryListAdapter(getActivity(), callList);
         callListView.setAdapter(adapter);
@@ -64,26 +68,105 @@ public class HistoryFragment extends Fragment {
     public void onResume() {
         Log.i(TAG, "onResume");
         super.onResume();
-//        this.readCallsFromDatabase();
+        this.readCallsFromDatabase();
         adapter = new HistoryListAdapter(getActivity(), callList);
         callListView.setAdapter(adapter);
     }
 
-    public void filterList(String charText) {
-        Log.i(TAG, "FilterList called: "+charText);
-        charText = charText.toLowerCase(Locale.getDefault());
+    public void filterList(String charText, boolean contacts, boolean nonContacts, boolean incoming, boolean outgoing){
+        Log.i(TAG, "filterList:");
+        Log.i(TAG, "    chatText: "+charText);
+        Log.i(TAG, "    contacts: "+contacts);
+        Log.i(TAG, "    nonContacts: "+nonContacts);
+        Log.i(TAG, "    incoming: "+incoming);
+        Log.i(TAG, "    outgoing: "+outgoing);
+        ArrayList<CallItem> temp = new ArrayList<>();
         callList.clear();
-        if (charText.length() == 0) {
-            callList.addAll(callListOriginal);
-        } else {
-            for (int i = 0; i < callListOriginal.size(); i++) {
-                CallItem entry = callListOriginal.get(i);
+
+        if(contacts && nonContacts){
+            if(incoming && outgoing){
+                //add all in original list
+                temp.addAll(callListOriginal);
+            } else if(incoming){
+                //add incoming calls from original list
+                for(CallItem item : callListOriginal){
+                    if(item.getCallType() == 2 || item.getCallType() == 3){
+                        temp.add(item);
+                    }
+                }
+            } else if(outgoing){
+                //add outgoing calls from original list
+                for(CallItem item : callListOriginal){
+                    if(item.getCallType() == 1){
+                        temp.add(item);
+                    }
+                }
+            } else{
+                //add NONE from original list
+            }
+        }
+        else if(contacts){
+            if(incoming && outgoing){
+                //add all in contacts list
+                temp.addAll(contactsCallList);
+            } else if(incoming){
+                //add incoming calls from contacts list
+                for(CallItem item : contactsCallList){
+                    if(item.getCallType() == 2 || item.getCallType() == 3){
+                        temp.add(item);
+                    }
+                }
+            } else if(outgoing){
+                //add outgoing calls from contacts list
+                for(CallItem item : contactsCallList){
+                    if(item.getCallType() == 1){
+                        temp.add(item);
+                    }
+                }
+            } else{
+                //add NONE from contacts list
+            }
+        }
+        else if(nonContacts){
+            if(incoming && outgoing){
+                //add all in non-contacts list
+                temp.addAll(noncontactsCallList);
+            } else if(incoming){
+                //add incoming calls from non-contacts list
+                for(CallItem item : noncontactsCallList){
+                    if(item.getCallType() == 2 || item.getCallType() == 3){
+                        temp.add(item);
+                    }
+                }
+            } else if(outgoing){
+                //add outgoing calls from non-contacts list
+                for(CallItem item : noncontactsCallList){
+                    if(item.getCallType() == 1){
+                        temp.add(item);
+                    }
+                }
+            } else{
+                //add NONE from non-contacts list
+            }
+        }
+
+        if(charText.length() == 0){
+            callList.addAll(temp);
+        } else{
+            for (int i = 0; i < temp.size(); i++) {
+                CallItem entry = temp.get(i);
+//                if(Long.toString(entry.getNumber()).contains(charText)
+//                        || entry.getFormattedNumber().contains(charText)
+//                        || entry.getContactName().contains(charText)){
+////                    Log.i("History", "call matched: "+entry.getNumber());
+//                    callList.add(entry);
+//                }
                 if(Long.toString(entry.getNumber()).contains(charText)
-                        || entry.getFormattedNumber().contains(charText)){
+                        || (entry.getContactName() != null
+                        && entry.getContactName().toLowerCase().contains(charText.toLowerCase()))){
 //                    Log.i("History", "call matched: "+entry.getNumber());
                     callList.add(entry);
                 }
-                //TODO: Handle contacts. Here, or in getFormattedNumber()
             }
         }
         adapter.notifyDataSetChanged();
@@ -123,6 +206,8 @@ public class HistoryFragment extends Fragment {
         Log.i(TAG,"readCallsFromDatabase");
         callList = new ArrayList<>();
         callListOriginal = new ArrayList<>();
+        contactsCallList = new ArrayList<>();
+        noncontactsCallList = new ArrayList<>();
         dbHelper = DbHelper.getInstance(getActivity());
         database = dbHelper.getReadableDatabase();
         String[] projection = {
@@ -154,11 +239,25 @@ public class HistoryFragment extends Fragment {
 
                 existingCall.setContactName(getContactName(getContext(), Long.toString(existingCall.getNumber())));
 
+                if(existingCall.getContactName() != null){
+                    Log.i(TAG, "contactName null");
+                    //Then this call was from a contact
+                    contactsCallList.add(existingCall);
+                } else{
+                    Log.i(TAG, "contactName NOT null");
+                    //Then this call was not from a contact
+                    noncontactsCallList.add(existingCall);
+                }
+
                 callList.add(existingCall);
                 callListOriginal.add(existingCall);
             } while (cursor.moveToNext());
         }
         cursor.close();
+        Log.i(TAG, "callList size: "+callList.size());
+        Log.i(TAG, "contacts size: "+contactsCallList.size());
+        Log.i(TAG, "non-contacts size: "+noncontactsCallList.size());
+
 //        callListOriginal = new ArrayList<>();
 //        callListOriginal.addAll(callList);
     }

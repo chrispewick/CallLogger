@@ -1,13 +1,22 @@
 <resources>
     <string name="app_name">Call Logger</string>
-    <string name="recents">Recents</string>
     <string name="history">History</string>
     <string name="numbers">Numbers</string>
+    <string name="contacts">Contacts</string>
+    <string name="non_contacts">Non-Contacts</string>
 
-    <string name="incoming">incoming</string>
-    <string name="outgoing">outgoing</string>
-    <string name="missed">missed</string>
-    <string name="answered">answered</string>
+
+    <string name="incoming">Incoming</string>
+    <string name="outgoing">Outgoing</string>
+    <string name="missed">Missed</string>
+    <string name="answered">Answered</string>
+
+    <!--For the filter options-->
+    <string name="show">Show:</string>
+    <string name="tabbed_contacts">    Contacts</string>
+    <string name="tabbed_non_contacts">    Non-Contacts</string>
+    <string name="tabbed_incoming">    Incoming</string>
+    <string name="tabbed_outgoing">    Outgoing</string>
 
     <string name="search_hint">Search by number or contact name…</string>
 
