@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/contact_icon"
+        android:layout_width="54dp"
+        android:layout_height="54dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:padding="6dp"
+        android:src="@drawable/contact_phone_icon"/>
+
+    <TextView
+        android:id="@+id/contact_number"
+        android:layout_width="0dp"
+        android:layout_height="54dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:textSize="26sp"
+        android:text="@string/number_test"/>
+
+    <ImageView
+        android:id="@+id/info"
+        android:layout_width="54dp"
+        android:layout_height="54dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:padding="6dp"
+        android:src="@drawable/info_icon"/>
+
+</LinearLayout>

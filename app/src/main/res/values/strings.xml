@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Call Logger</string>
+    <string name="recents">Recents</string>
+    <string name="history">History</string>
+    <string name="numbers">Numbers</string>
+
+    <string name="incoming">incoming</string>
+    <string name="outgoing">outgoing</string>
+    <string name="missed">missed</string>
+    <string name="answered">answered</string>
+
+    <string name="search_hint">Search by number or contact name…</string>
+
+
+    <string name="number_test">(515) 867–5309</string>
+    <string name="date_time_test">5/17/2017 2:57pm</string>
+</resources>
