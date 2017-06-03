@@ -27,6 +27,7 @@ import com.pewick.calllogger.database.DbHelper;
 import com.pewick.calllogger.models.CallItem;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Locale;
 
 /**
@@ -38,9 +39,6 @@ public class HistoryFragment extends Fragment {
 
     private ListView callListView;
     private HistoryListAdapter adapter;
-
-    private DbHelper dbHelper;
-    private SQLiteDatabase database;
 
     private ArrayList<CallItem> callList;
     private ArrayList<CallItem> callListOriginal;
@@ -204,12 +202,13 @@ public class HistoryFragment extends Fragment {
 
     private void readCallsFromDatabase(){
         Log.i(TAG,"readCallsFromDatabase");
+        Calendar startTime = Calendar.getInstance();
         callList = new ArrayList<>();
         callListOriginal = new ArrayList<>();
         contactsCallList = new ArrayList<>();
         noncontactsCallList = new ArrayList<>();
-        dbHelper = DbHelper.getInstance(getActivity());
-        database = dbHelper.getReadableDatabase();
+        DbHelper dbHelper = DbHelper.getInstance(getActivity());
+        SQLiteDatabase database = dbHelper.getReadableDatabase();
         String[] projection = {
                 DataContract.CallTable.CALL_ID,
                 DataContract.CallTable.NUMBER,
@@ -224,8 +223,10 @@ public class HistoryFragment extends Fragment {
         String sortOrder = DataContract.CallTable.START_TIME + " DESC";
 
         //fetch the data from the database as specified
+//        database.beginTransaction();
         Cursor cursor = database.query(DataContract.CallTable.TABLE_NAME, projection, null, null, null, null, sortOrder);
-
+//        database.setTransactionSuccessful();
+//        database.endTransaction();
         if(cursor.moveToFirst()){
             do{
                 //public CallItem(int id, long num, long start, long end, String inOut, String ansMiss){
@@ -240,11 +241,11 @@ public class HistoryFragment extends Fragment {
                 existingCall.setContactName(getContactName(getContext(), Long.toString(existingCall.getNumber())));
 
                 if(existingCall.getContactName() != null){
-                    Log.i(TAG, "contactName null");
+//                    Log.i(TAG, "contactName null");
                     //Then this call was from a contact
                     contactsCallList.add(existingCall);
                 } else{
-                    Log.i(TAG, "contactName NOT null");
+//                    Log.i(TAG, "contactName NOT null");
                     //Then this call was not from a contact
                     noncontactsCallList.add(existingCall);
                 }
@@ -253,7 +254,11 @@ public class HistoryFragment extends Fragment {
                 callListOriginal.add(existingCall);
             } while (cursor.moveToNext());
         }
+//        database.setTransactionSuccessful();
+//        database.endTransaction();
         cursor.close();
+        Calendar endTime = Calendar.getInstance();
+        Log.i(TAG, "Time: "+ (endTime.getTimeInMillis() - startTime.getTimeInMillis()));
         Log.i(TAG, "callList size: "+callList.size());
         Log.i(TAG, "contacts size: "+contactsCallList.size());
         Log.i(TAG, "non-contacts size: "+noncontactsCallList.size());

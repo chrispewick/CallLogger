@@ -42,7 +42,7 @@ public class DbHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        //Delete -- But why?
+        //Delete
         db.execSQL(DataContract.SQL_DELETE_CALL_TABLE);
         db.execSQL(DataContract.SQL_DELETE_NUMBERS_TABLE);
 

@@ -1,6 +1,7 @@
 package com.pewick.calllogger.adapters;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.view.LayoutInflater;
@@ -68,9 +69,14 @@ public class NumbersListAdapter extends ArrayAdapter<NumberItem> {
 //        }
 
 
-        InputStream is = item.openPhoto(getContext(), item.getNumber());
-        if(is != null){
-            vh.icon.setImageBitmap(BitmapFactory.decodeStream(is));
+//        InputStream is = item.openPhoto(getContext(), item.getNumber());
+//        if(is != null){
+//            vh.icon.setImageBitmap(BitmapFactory.decodeStream(is));
+//        }
+
+        Bitmap image = item.getContactImage();
+        if(image != null){
+            vh.icon.setImageBitmap(image);
         }
 
         return cellView;

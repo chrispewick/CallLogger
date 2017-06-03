@@ -6,6 +6,7 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.v4.content.ContextCompat;
@@ -26,6 +27,8 @@ public class NumberItem implements ILoggerListItem {
     private int mostRecentCallId;
     private String contactName;
     private String notes;
+
+    private Bitmap contactImage;
 
     public NumberItem(long num, int recent, String contact, String notes){
         this.number = num;
@@ -53,6 +56,14 @@ public class NumberItem implements ILoggerListItem {
             return temp;
         }
 
+    }
+
+    public Bitmap getContactImage() {
+        return contactImage;
+    }
+
+    public void setContactImage(Bitmap contactImage) {
+        this.contactImage = contactImage;
     }
 
     public Uri getPhotoUri(Context context, long number) {
