@@ -28,6 +28,7 @@ import com.pewick.calllogger.models.CallItem;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Locale;
 
 /**
@@ -171,7 +172,6 @@ public class HistoryFragment extends Fragment {
     }
 
     private void setListEventListeners(){
-
         callListView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -196,7 +196,6 @@ public class HistoryFragment extends Fragment {
             }
             cursor.close();
         }
-
         return contactName;
     }
 
@@ -257,6 +256,11 @@ public class HistoryFragment extends Fragment {
 //        database.setTransactionSuccessful();
 //        database.endTransaction();
         cursor.close();
+
+//        Collections.sort(callList);
+//        Collections.sort(callListOriginal);
+//        callListOriginal.addAll(callList);
+
         Calendar endTime = Calendar.getInstance();
         Log.i(TAG, "Time: "+ (endTime.getTimeInMillis() - startTime.getTimeInMillis()));
         Log.i(TAG, "callList size: "+callList.size());

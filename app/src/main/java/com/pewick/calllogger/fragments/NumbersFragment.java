@@ -31,6 +31,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Locale;
 
 /**
@@ -171,12 +173,11 @@ public class NumbersFragment extends Fragment {
         };
 
         //specify read order based on number
-        //TODO: Handle contacts? - may need to sort them myself
-        String sortOrder = DataContract.NumbersTable.NUMBER + " ASC";
+//        String sortOrder = DataContract.NumbersTable.NUMBER + " ASC";
 
         //fetch the data from the database as specified
         database.beginTransaction();
-        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME, projection, null, null, null, null, sortOrder);
+        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME, projection, null, null, null, null, null);
         database.setTransactionSuccessful();
         database.endTransaction();
         if(cursor.moveToFirst()){
@@ -210,10 +211,20 @@ public class NumbersFragment extends Fragment {
 
                 //cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.CONTACT_NAME))
 
-                numbersList.add(existingNumber);
-                numbersListOriginal.add(existingNumber);
+//                numbersList.add(existingNumber);
+//                numbersListOriginal.add(existingNumber);
             } while (cursor.moveToNext());
         }
+
+        Collections.sort(numberNonContactList);
+        Collections.sort(numberContactList);
+
+
+        //The following ensures that non-contacts will be above contacts
+        numbersList.addAll(numberNonContactList);
+        numbersList.addAll(numberContactList);
+        numbersListOriginal.addAll(numberNonContactList);
+        numbersListOriginal.addAll(numberContactList);
 
         cursor.close();
     }

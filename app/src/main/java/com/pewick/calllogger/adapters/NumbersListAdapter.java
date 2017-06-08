@@ -77,6 +77,8 @@ public class NumbersListAdapter extends ArrayAdapter<NumberItem> {
         Bitmap image = item.getContactImage();
         if(image != null){
             vh.icon.setImageBitmap(image);
+        } else {
+            vh.icon.setImageResource(R.drawable.contact_phone_icon);
         }
 
         return cellView;

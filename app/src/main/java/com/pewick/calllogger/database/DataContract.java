@@ -22,6 +22,10 @@ public class DataContract {
                     + NumbersTable.MOST_RECENT + " INTEGER,"
                     + NumbersTable.NOTES + " TEXT)";
 
+//    public static final String SQL_CREATE_INDEX_1_ON_REMINDER_TABLE =
+//            "CREATE INDEX IF NOT EXISTS " + CallTable.CALL_ID + " ON "
+//                    + CallTable.TABLE_NAME + " (" + CallTable.REMINDER_DATE + ")";
+
     public static final String SQL_DELETE_CALL_TABLE = "DROP TABLE IF EXISTS " + CallTable.TABLE_NAME;
     public static final String SQL_DELETE_NUMBERS_TABLE = "DROP TABLE IF EXISTS " + NumbersTable.TABLE_NAME;
 

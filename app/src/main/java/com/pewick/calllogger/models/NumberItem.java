@@ -19,7 +19,7 @@ import java.io.InputStream;
 /**
  * Created by Chris on 5/17/2017.
  */
-public class NumberItem implements ILoggerListItem {
+public class NumberItem implements ILoggerListItem, Comparable<NumberItem>  {
 
     private final String TAG = getClass().getSimpleName();
 
@@ -162,5 +162,20 @@ public class NumberItem implements ILoggerListItem {
 
     public String getNotes() {
         return notes;
+    }
+
+    @Override
+    public int compareTo(NumberItem item){
+        if(this.contactName == null && item.getContactName() == null){
+            if(this.number > item.getNumber()){
+                return 1;
+            } else if(this.number < item.getNumber()){
+                return -1;
+            }
+        } else if(this.contactName != null && item.getContactName() != null){
+            return contactName.compareTo(item.getContactName());
+        }
+
+        return 0;
     }
 }

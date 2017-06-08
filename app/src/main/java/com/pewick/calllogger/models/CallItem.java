@@ -1,5 +1,7 @@
 package com.pewick.calllogger.models;
 
+import android.telecom.Call;
+
 import com.pewick.calllogger.R;
 
 import java.util.Calendar;
@@ -10,7 +12,7 @@ import java.util.Locale;
 /**
  * Created by Chris on 5/17/2017.
  */
-public class CallItem implements ILoggerListItem {
+public class CallItem implements ILoggerListItem, Comparable<CallItem> {
 
     private final String TAG = getClass().getSimpleName();
 
@@ -100,6 +102,16 @@ public class CallItem implements ILoggerListItem {
 
     public String getAnsMiss() {
         return ansMiss;
+    }
+
+    @Override
+    public int compareTo(CallItem item){
+        if(this.startTime < item.getStartTime()){
+            return 1;
+        } else if(this.startTime > item.getStartTime()){
+            return -1;
+        }
+        return 0;
     }
 
 }
