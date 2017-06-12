@@ -292,6 +292,7 @@ public class MainActivity extends AppCompatActivity {
                     boolean noncontactsF = numbersPopUp.getMenu().getItem(1).isChecked();
                     ((NumbersFragment)((ListPagerAdapter) pager.getAdapter()).getCurrentFragment())
                             .filterList(text, contactsF, noncontactsF);
+                    //TODO: Crashes at above. Called after onStart
                 } else {
 //                    ((HistoryFragment)((ListPagerAdapter) pager.getAdapter()).getCurrentFragment()).filterList(text);
 

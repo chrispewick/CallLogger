@@ -1,6 +1,7 @@
 package com.pewick.calllogger.fragments;
 
 import android.Manifest;
+import android.app.DialogFragment;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
@@ -17,11 +18,14 @@ import android.support.v4.content.ContextCompat;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.pewick.calllogger.R;
+import com.pewick.calllogger.activity.MainActivity;
 import com.pewick.calllogger.adapters.NumbersListAdapter;
 import com.pewick.calllogger.database.DataContract;
 import com.pewick.calllogger.database.DbHelper;
@@ -62,6 +66,9 @@ public class NumbersFragment extends Fragment {
         adapter = new NumbersListAdapter(getActivity(),numbersList);
         numbersListView.setAdapter(adapter);
 
+        this.setListEventListeners();
+        this.setOnClickListener();
+
         return view;
     }
 
@@ -72,6 +79,35 @@ public class NumbersFragment extends Fragment {
         this.readNumbersFromDatabase();
         adapter = new NumbersListAdapter(getActivity(),numbersList);
         numbersListView.setAdapter(adapter);
+    }
+
+    private void setOnClickListener(){
+        numbersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
+                NumberItem item = (NumberItem) numbersList.get(position);
+
+                Bundle args = new Bundle();
+                args.putParcelable("number_item", item);
+
+                NumberDialogFragment dialog = new NumberDialogFragment();
+                dialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.NewDialog);
+                dialog.setArguments(args);
+
+                dialog.show(getActivity().getFragmentManager(), null);
+            }
+        });
+    }
+
+    private void setListEventListeners(){
+        numbersListView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                ((MainActivity) getActivity()).closeKeyboard();
+                return false;
+            }
+        });
     }
 
     public void filterList(String charText, boolean contacts, boolean nonContacts) {
@@ -106,9 +142,10 @@ public class NumbersFragment extends Fragment {
         adapter.notifyDataSetChanged();
     }
 
+    //Need to do this evertime, in case the user changes a contact name
     private String getContactName(Context context, String phoneNumber) {
         String contactName = null;
-        if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_CONTACTS)
+        if(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)
                 == PackageManager.PERMISSION_GRANTED){
             ContentResolver cr = context.getContentResolver();
             Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
@@ -157,9 +194,6 @@ public class NumbersFragment extends Fragment {
     }
 
     private void readNumbersFromDatabase(){
-
-
-
         numbersList = new ArrayList<>();
         numbersListOriginal = new ArrayList<>();
         numberContactList = new ArrayList<>();
@@ -169,7 +203,10 @@ public class NumbersFragment extends Fragment {
         String[] projection = {
                 DataContract.NumbersTable.NUMBER,
                 DataContract.NumbersTable.MOST_RECENT,
-                DataContract.NumbersTable.NOTES
+                DataContract.NumbersTable.NOTES,
+                DataContract.NumbersTable.OUTGOING_COUNT,
+                DataContract.NumbersTable.ANSWERED_COUNT,
+                DataContract.NumbersTable.MISSED_COUNT
         };
 
         //specify read order based on number
@@ -192,7 +229,10 @@ public class NumbersFragment extends Fragment {
                 NumberItem existingNumber = new NumberItem(number,
                         cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.MOST_RECENT)),
                         contact,
-                        cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NOTES)));
+                        cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NOTES)),
+                        cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.OUTGOING_COUNT)),
+                        cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.ANSWERED_COUNT)),
+                        cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.MISSED_COUNT)));
 
                 if(existingNumber.getContactName() != null){
                     //then the number is in contacts

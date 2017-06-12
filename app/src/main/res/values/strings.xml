@@ -5,7 +5,7 @@
     <string name="contacts">Contacts</string>
     <string name="non_contacts">Non-Contacts</string>
 
-
+    <string name="description">Description</string>
     <string name="incoming">Incoming</string>
     <string name="outgoing">Outgoing</string>
     <string name="missed">Missed</string>
@@ -20,7 +20,16 @@
 
     <string name="search_hint">Search by number or contact name…</string>
 
+    <!--For the Numbers dialog fragment -->
+    <string name="most_recent">Most Recent:</string>
+    <string name="total_in">Total Incoming:</string>
+    <string name="total_out">Total Outgoing:</string>
+    <string name="notes">Notes</string>
+    <string name="call">Call</string>
+    <string name="close">Close</string>
+    <string name="done">Done</string>
 
+    <!--For testing UI elements-->
     <string name="number_test">(515) 867–5309</string>
     <string name="date_time_test">5/17/2017 2:57pm</string>
 </resources>

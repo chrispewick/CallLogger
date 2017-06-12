@@ -1,18 +1,44 @@
 package com.pewick.calllogger.database;
 
+import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.provider.ContactsContract;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
+
+import com.pewick.calllogger.activity.MainActivity;
+import com.pewick.calllogger.adapters.LoggerListAdapter;
+import com.pewick.calllogger.models.CallItem;
+import com.pewick.calllogger.models.NumberItem;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
 
 /**
  * Created by Chris on 5/16/2017.
  */
 public class DbHelper extends SQLiteOpenHelper {
+    private final String TAG = getClass().getSimpleName();
+
     // NOTE: if the database schema is updated, this version number MUST be incremented
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 4;
+    //TODO: Change the database name!!
     public static final String DATABASE_NAME = "MusicPlayer.db";
 
     private static DbHelper dbHelperInstance;
+    private Context context;
+    private ArrayList<NumberItem> numbersList;
+    private ArrayList<CallItem> callsList;
 
     /**
      * Create a helper object to create, open, and/or manage a database. Uses the version number
@@ -21,6 +47,7 @@ public class DbHelper extends SQLiteOpenHelper {
      */
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context = context;
     }
 
     /**
@@ -42,6 +69,7 @@ public class DbHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
+        Log.i(TAG, "onCreate, version: "+db.getVersion());
         //Delete
         db.execSQL(DataContract.SQL_DELETE_CALL_TABLE);
         db.execSQL(DataContract.SQL_DELETE_NUMBERS_TABLE);
@@ -62,15 +90,248 @@ public class DbHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // discard data and start over - probably not a good idea for this app in particular
-//        onCreate(db);
+        Log.i(TAG, "onUpgrade");
 
-        //Write logic to preserve the data currently in the user's database, then implement the
+        // Write logic to preserve the data currently in the user's database, then implement the
         // changes to the database tables, finally, copy the original data back into the new tables.
+        this.readNumbersFromDatabaseVersion3(db);
+        this.readCallsFromDatabase(db);
+
+        if(oldVersion < 4) {
+            //Retrieve all data from the tables in the existing database
+            this.readNumbersFromDatabaseVersion3(db);
+            this.readCallsFromDatabase(db);
+
+            //Delete the old tables
+            db.execSQL(DataContract.SQL_DELETE_CALL_TABLE);
+            db.execSQL(DataContract.SQL_DELETE_NUMBERS_TABLE);
+            //Ceates the new tables
+            db.execSQL(DataContract.SQL_CREATE_CALL_TABLE);
+            db.execSQL(DataContract.SQL_CREATE_NUMBERS_TABLE);
+
+            //Need to add the three count tables to original table
+//            db.execSQL("ALTER TABLE " + DataContract.NumbersTable.TABLE_NAME
+//                    + " ADD COLUMN " + DataContract.NumbersTable.OUTGOING_COUNT + " INTEGER DEFAULT 0");
+//            db.execSQL("ALTER TABLE " + DataContract.NumbersTable.TABLE_NAME
+//                    + " ADD COLUMN " + DataContract.NumbersTable.ANSWERED_COUNT + " INTEGER DEFAULT 0");
+//            db.execSQL("ALTER TABLE " + DataContract.NumbersTable.TABLE_NAME
+//                    + " ADD COLUMN " + DataContract.NumbersTable.MISSED_COUNT + " INTEGER DEFAULT 0");
+
+
+            for (CallItem callItem : callsList) {
+                this.addCallToTable(db, callItem);
+                //Now, find the corresponding number and increment the appropriate count
+                for (NumberItem numItem : numbersList) {
+                    if (callItem.getNumber() == numItem.getNumber()) {
+                        Log.i(TAG, "Found matching number for call item");
+                        switch (callItem.getCallType()) {
+                            case 1:
+                                //Outgoing
+                                numItem.setOutgoingCount(numItem.getOutgoingCount() + 1);
+                                break;
+                            case 2:
+                                //Answered
+                                numItem.setAnsweredCount(numItem.getAnsweredCount() + 1);
+                                break;
+                            case 3:
+                                //Missed
+                                numItem.setMissedCount(numItem.getMissedCount() + 1);
+                                break;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            for (NumberItem numberItem : numbersList) {
+                this.addNumberToTable(db, numberItem);
+            }
+        }
     }
 
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Again, just discard everything
-        onUpgrade(db, oldVersion, newVersion);
+//        onUpgrade(db, oldVersion, newVersion);
+    }
+
+    private void readNumbersFromDatabase(SQLiteDatabase database){
+        numbersList = new ArrayList<>();
+
+//        DbHelper dbHelper = DbHelper.getInstance();
+        String[] projection = {
+                DataContract.NumbersTable.NUMBER,
+                DataContract.NumbersTable.MOST_RECENT,
+                DataContract.NumbersTable.NOTES,
+                DataContract.NumbersTable.OUTGOING_COUNT,
+                DataContract.NumbersTable.ANSWERED_COUNT,
+                DataContract.NumbersTable.MISSED_COUNT
+
+        };
+
+        //specify read order based on number
+//        String sortOrder = DataContract.NumbersTable.NUMBER + " ASC";
+
+        //fetch the data from the database as specified
+        database.beginTransaction();
+        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME, projection, null, null, null, null, null);
+        database.setTransactionSuccessful();
+        database.endTransaction();
+        if(cursor.moveToFirst()){
+            do{
+                long number = cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NUMBER));
+//                Log.i(TAG, "Number: "+number);
+
+                String contact = getContactName(context, Long.toString(number));
+
+                NumberItem existingNumber = new NumberItem(number,
+                        cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.MOST_RECENT)),
+                        contact,
+                        cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NOTES)));
+
+                //cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.CONTACT_NAME))
+
+                numbersList.add(existingNumber);
+//                numbersListOriginal.add(existingNumber);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+    }
+
+    private String getContactName(Context context, String phoneNumber) {
+        String contactName = null;
+        if(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)
+                == PackageManager.PERMISSION_GRANTED){
+            ContentResolver cr = context.getContentResolver();
+            Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+            Cursor cursor = cr.query(uri, new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME}, null, null, null);
+            if (cursor == null) {
+                return null;
+            }
+            if(cursor.moveToFirst()) {
+                contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME));
+            }
+            cursor.close();
+        }
+
+        return contactName;
+    }
+
+    private void readCallsFromDatabase(SQLiteDatabase database){
+        Log.i(TAG,"readCallsFromDatabase");
+        Calendar startTime = Calendar.getInstance();
+        callsList = new ArrayList<>();
+        String[] projection = {
+                DataContract.CallTable.CALL_ID,
+                DataContract.CallTable.NUMBER,
+                DataContract.CallTable.START_TIME,
+                DataContract.CallTable.END_TIME,
+                DataContract.CallTable.INCOMING_OUTGOING,
+                DataContract.CallTable.ANSWERED_MISSED
+        };
+
+        //specify read order based on number
+        String sortOrder = DataContract.CallTable.START_TIME + " DESC";
+
+        //fetch the data from the database as specified
+//        database.beginTransaction();
+        Cursor cursor = database.query(DataContract.CallTable.TABLE_NAME, projection, null, null, null, null, sortOrder);
+//        database.setTransactionSuccessful();
+//        database.endTransaction();
+        if(cursor.moveToFirst()){
+            do{
+                //public CallItem(int id, long num, long start, long end, String inOut, String ansMiss){
+
+                CallItem existingCall = new CallItem(cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.CallTable.CALL_ID)),
+                        cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.CallTable.NUMBER)),
+                        cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.CallTable.START_TIME)),
+                        cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.CallTable.END_TIME)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(DataContract.CallTable.INCOMING_OUTGOING)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(DataContract.CallTable.ANSWERED_MISSED)));
+
+                existingCall.setContactName(getContactName(context, Long.toString(existingCall.getNumber())));
+                callsList.add(existingCall);
+            } while (cursor.moveToNext());
+        }
+//        database.setTransactionSuccessful();
+//        database.endTransaction();
+        cursor.close();
+
+    }
+
+    private void addNumberToTable(SQLiteDatabase database, NumberItem numberItem){
+
+        ContentValues sqlValuesStatement = new ContentValues();
+        sqlValuesStatement.put(DataContract.NumbersTable.NUMBER, numberItem.getNumber());
+        sqlValuesStatement.put(DataContract.NumbersTable.MOST_RECENT, numberItem.getMostRecentCallId());
+        sqlValuesStatement.put(DataContract.NumbersTable.NOTES, numberItem.getNotes());
+        sqlValuesStatement.put(DataContract.NumbersTable.OUTGOING_COUNT, numberItem.getOutgoingCount());
+        sqlValuesStatement.put(DataContract.NumbersTable.ANSWERED_COUNT, numberItem.getAnsweredCount());
+        sqlValuesStatement.put(DataContract.NumbersTable.MISSED_COUNT, numberItem.getMissedCount());
+
+        database.beginTransaction();
+        database.insert(DataContract.NumbersTable.TABLE_NAME, null, sqlValuesStatement);
+        database.setTransactionSuccessful();
+        database.endTransaction();
+    }
+
+    private long addCallToTable(SQLiteDatabase database, CallItem callItem){
+
+        ContentValues sqlValuesStatement = new ContentValues();
+        sqlValuesStatement.put(DataContract.CallTable.NUMBER, callItem.getNumber());
+        sqlValuesStatement.put(DataContract.CallTable.START_TIME, callItem.getStartTime());
+        sqlValuesStatement.put(DataContract.CallTable.END_TIME, callItem.getEndTime());
+
+        sqlValuesStatement.put(DataContract.CallTable.INCOMING_OUTGOING, callItem.getInOut());
+        sqlValuesStatement.put(DataContract.CallTable.ANSWERED_MISSED, callItem.getAnsMiss());
+        sqlValuesStatement.put(DataContract.CallTable.CALL_ID, callItem.getCallId());
+
+        database.beginTransaction();
+        long rowID = database.insert(DataContract.CallTable.TABLE_NAME, null, sqlValuesStatement);
+        database.setTransactionSuccessful();
+        database.endTransaction();
+
+        return rowID;
+    }
+
+
+
+    private void readNumbersFromDatabaseVersion3(SQLiteDatabase database){
+        numbersList = new ArrayList<>();
+
+//        DbHelper dbHelper = DbHelper.getInstance();
+        String[] projection = {
+                DataContract.NumbersTable.NUMBER,
+                DataContract.NumbersTable.MOST_RECENT,
+                DataContract.NumbersTable.NOTES
+        };
+
+        //specify read order based on number
+//        String sortOrder = DataContract.NumbersTable.NUMBER + " ASC";
+
+        //fetch the data from the database as specified
+        database.beginTransaction();
+        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME, projection, null, null, null, null, null);
+        database.setTransactionSuccessful();
+        database.endTransaction();
+        if(cursor.moveToFirst()){
+            do{
+                long number = cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NUMBER));
+//                Log.i(TAG, "Number: "+number);
+
+                String contact = getContactName(context, Long.toString(number));
+
+                NumberItem existingNumber = new NumberItem(number,
+                        cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.MOST_RECENT)),
+                        contact,
+                        cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NOTES)));
+
+                //cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.CONTACT_NAME))
+
+                numbersList.add(existingNumber);
+//                numbersListOriginal.add(existingNumber);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
     }
 }

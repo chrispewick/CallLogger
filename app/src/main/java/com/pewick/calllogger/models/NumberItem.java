@@ -8,6 +8,8 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.provider.ContactsContract;
 import android.support.v4.content.ContextCompat;
 import android.telephony.PhoneNumberUtils;
@@ -19,17 +21,31 @@ import java.io.InputStream;
 /**
  * Created by Chris on 5/17/2017.
  */
-public class NumberItem implements ILoggerListItem, Comparable<NumberItem>  {
+public class NumberItem implements ILoggerListItem, Comparable<NumberItem>, Parcelable {
 
     private final String TAG = getClass().getSimpleName();
 
     private long number;
     private int mostRecentCallId;
+    private int outgoingCount;
+    private int answeredCount;
+    private int missedCount;
     private String contactName;
     private String notes;
 
     private Bitmap contactImage;
 
+    public NumberItem(long num, int recent, String contact, String notes, int outgoing, int answered, int missed){
+        this.number = num;
+        this.mostRecentCallId = recent;
+        this.contactName = contact;
+        this.notes = notes;
+        this.outgoingCount = outgoing;
+        this.answeredCount = answered;
+        this.missedCount = missed;
+    }
+
+    //For earlier versions only
     public NumberItem(long num, int recent, String contact, String notes){
         this.number = num;
         this.mostRecentCallId = recent;
@@ -45,7 +61,7 @@ public class NumberItem implements ILoggerListItem, Comparable<NumberItem>  {
         }
     }
 
-    private String getFormattedNumber(){
+    public String getFormattedNumber(){
         String temp = ""+this.number;
         if(temp.length() == 10) {
             return String.format("(%s) %s-%s",
@@ -164,6 +180,30 @@ public class NumberItem implements ILoggerListItem, Comparable<NumberItem>  {
         return notes;
     }
 
+    public int getOutgoingCount() {
+        return outgoingCount;
+    }
+
+    public void setOutgoingCount(int outgoingCount) {
+        this.outgoingCount = outgoingCount;
+    }
+
+    public int getAnsweredCount() {
+        return answeredCount;
+    }
+
+    public void setAnsweredCount(int answeredCount) {
+        this.answeredCount = answeredCount;
+    }
+
+    public int getMissedCount() {
+        return missedCount;
+    }
+
+    public void setMissedCount(int missedCount) {
+        this.missedCount = missedCount;
+    }
+
     @Override
     public int compareTo(NumberItem item){
         if(this.contactName == null && item.getContactName() == null){
@@ -178,4 +218,44 @@ public class NumberItem implements ILoggerListItem, Comparable<NumberItem>  {
 
         return 0;
     }
+
+    @Override
+    public void writeToParcel(Parcel out, int flags){
+        out.writeLong(this.number);
+        out.writeInt(this.mostRecentCallId);
+        out.writeStringArray(new String[]{
+                this.contactName,
+                this.notes
+        });
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public NumberItem(Parcel in){
+        this.number = in.readLong();
+        this.mostRecentCallId = in.readInt();
+
+        String[] stringVals = new String[2];
+        in.readStringArray(stringVals);
+        this.contactName = stringVals[0];
+        this.notes = stringVals[1];
+    }
+
+    public static final Parcelable.Creator<NumberItem> CREATOR
+            = new Parcelable.Creator<NumberItem>() {
+
+        // This simply calls the Parcel constructor
+        @Override
+        public NumberItem createFromParcel(Parcel in) {
+            return new NumberItem(in);
+        }
+
+        @Override
+        public NumberItem[] newArray(int size) {
+            return new NumberItem[size];
+        }
+    };
 }

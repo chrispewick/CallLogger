@@ -1,5 +1,7 @@
 package com.pewick.calllogger.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.telecom.Call;
 
 import com.pewick.calllogger.R;
@@ -12,7 +14,7 @@ import java.util.Locale;
 /**
  * Created by Chris on 5/17/2017.
  */
-public class CallItem implements ILoggerListItem, Comparable<CallItem> {
+public class CallItem implements ILoggerListItem, Comparable<CallItem>, Parcelable {
 
     private final String TAG = getClass().getSimpleName();
 
@@ -114,4 +116,54 @@ public class CallItem implements ILoggerListItem, Comparable<CallItem> {
         return 0;
     }
 
+    @Override
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeInt(this.callId);
+        out.writeLongArray(new long[]{
+                this.number,
+                this.startTime,
+                this.endTime
+        });
+        out.writeStringArray(new String[] {
+            this.inOut,
+            this.ansMiss,
+            this.contactName
+        });
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public CallItem(Parcel in){
+        this.callId = in.readInt();
+
+        long[] longVals = new long[3];
+        in.readLongArray(longVals);
+        this.number = longVals[0];
+        this.startTime = longVals[1];
+        this.endTime = longVals[2];
+
+        String[] stringVals = new String[3];
+        in.readStringArray(stringVals);
+        this.inOut = stringVals[0];
+        this.ansMiss = stringVals[1];
+        this.contactName = stringVals[2];
+    }
+
+    public static final Parcelable.Creator<CallItem> CREATOR
+            = new Parcelable.Creator<CallItem>() {
+
+        // This simply calls the Parcel constructor
+        @Override
+        public CallItem createFromParcel(Parcel in) {
+            return new CallItem(in);
+        }
+
+        @Override
+        public CallItem[] newArray(int size) {
+            return new CallItem[size];
+        }
+    };
 }

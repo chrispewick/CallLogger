@@ -1,6 +1,7 @@
 package com.pewick.calllogger.fragments;
 
 import android.Manifest;
+import android.app.DialogFragment;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -13,10 +14,14 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.telecom.Call;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.pewick.calllogger.R;
@@ -59,6 +64,7 @@ public class HistoryFragment extends Fragment {
         callListView.setAdapter(adapter);
 
         this.setListEventListeners();
+        this.setOnClickListener();
 
         return view;
     }
@@ -171,6 +177,25 @@ public class HistoryFragment extends Fragment {
         adapter.notifyDataSetChanged();
     }
 
+    private void setOnClickListener(){
+        callListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                //TODO: Open CallDialogFragment
+                CallItem item = (CallItem) callList.get(position);
+
+                Bundle args = new Bundle();
+                args.putParcelable("call_item", item);
+
+                CallDialogFragment dialog = new CallDialogFragment();
+                dialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.NewDialog);
+                dialog.setArguments(args);
+
+                dialog.show(getActivity().getFragmentManager(), null);
+            }
+        });
+    }
+
     private void setListEventListeners(){
         callListView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -183,7 +208,7 @@ public class HistoryFragment extends Fragment {
 
     private String getContactName(Context context, String phoneNumber) {
         String contactName = null;
-        if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_CONTACTS)
+        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS)
                 == PackageManager.PERMISSION_GRANTED){
             ContentResolver cr = context.getContentResolver();
             Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
@@ -237,7 +262,7 @@ public class HistoryFragment extends Fragment {
                         cursor.getString(cursor.getColumnIndexOrThrow(DataContract.CallTable.INCOMING_OUTGOING)),
                         cursor.getString(cursor.getColumnIndexOrThrow(DataContract.CallTable.ANSWERED_MISSED)));
 
-                existingCall.setContactName(getContactName(getContext(), Long.toString(existingCall.getNumber())));
+                existingCall.setContactName(getContactName(getActivity(), Long.toString(existingCall.getNumber())));
 
                 if(existingCall.getContactName() != null){
 //                    Log.i(TAG, "contactName null");
