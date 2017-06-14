@@ -2,20 +2,13 @@ package com.pewick.calllogger.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.telecom.Call;
-import android.util.Log;
-
-import com.pewick.calllogger.R;
 
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Formatter;
-import java.util.Locale;
 
 /**
- * Created by Chris on 5/17/2017.
+ * Defines the model for a call event.
  */
-public class CallItem implements ILoggerListItem, Comparable<CallItem>, Parcelable {
+public class CallItem implements Comparable<CallItem>, Parcelable {
 
     private final String TAG = getClass().getSimpleName();
 

@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 /**
- * Created by Chris on 5/17/2017.
+ * Custom ArrayAdapter for the phone numbers and contacts list found in the NumbersFragment.
  */
 public class NumbersListAdapter extends ArrayAdapter<NumberItem> {
 
@@ -43,9 +43,7 @@ public class NumbersListAdapter extends ArrayAdapter<NumberItem> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent){
-        //get the corresponding care note from the array list for each row
         NumberItem item = this.data.get(position);
-
         View cellView = convertView;
         NumberVH vh;
 
@@ -63,16 +61,6 @@ public class NumbersListAdapter extends ArrayAdapter<NumberItem> {
         }
 
         vh.number.setText(item.getDisplayText());
-//        Uri uri = item.getContactImage(getContext(), ""+item.getNumber());
-//        if(uri != null){
-//            vh.icon.setImageURI(uri);
-//        }
-
-
-//        InputStream is = item.openPhoto(getContext(), item.getNumber());
-//        if(is != null){
-//            vh.icon.setImageBitmap(BitmapFactory.decodeStream(is));
-//        }
 
         Bitmap image = item.getContactImage();
         if(image != null){

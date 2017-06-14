@@ -16,7 +16,7 @@ import com.pewick.calllogger.models.NumberItem;
 import java.util.ArrayList;
 
 /**
- * Created by Chris on 5/17/2017.
+ * Custom ArrayAdapter for the call history list found in the HistoryFragment.
  */
 public class HistoryListAdapter extends ArrayAdapter<CallItem> {
 

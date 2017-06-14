@@ -15,7 +15,6 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -32,16 +31,14 @@ import com.pewick.calllogger.database.DataContract;
 import com.pewick.calllogger.database.DbHelper;
 import com.pewick.calllogger.models.NumberItem;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Locale;
 
 /**
- * Created by Chris on 5/17/2017.
+ * Fragment containing a list of all numbers that have called, or been called by this device.
+ * From the MainActivity, the list can be searched, or filtered by contacts and non-contacts.
  */
 public class NumbersFragment extends Fragment {
 
@@ -60,9 +57,6 @@ public class NumbersFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_numbers_list, container, false);
-
-//        this.readNumbersFromDatabase();
-
         numbersList = new ArrayList<>();
         numbersListView = (ListView) view.findViewById(R.id.numbers_list);
         adapter = new NumbersListAdapter(getActivity(),numbersList);
@@ -83,7 +77,7 @@ public class NumbersFragment extends Fragment {
         this.readNumbersFromDatabase();
         adapter = new NumbersListAdapter(getActivity(),numbersList);
         numbersListView.setAdapter(adapter);
-        this.ifListEmptyShowNoResults();
+        this.checkNumberOfResults();
     }
 
     private void setOnClickListener(){
@@ -91,7 +85,7 @@ public class NumbersFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
 
-                NumberItem item = (NumberItem) numbersList.get(position);
+                NumberItem item = numbersList.get(position);
 
                 Bundle args = new Bundle();
                 args.putParcelable("number_item", item);
@@ -116,10 +110,10 @@ public class NumbersFragment extends Fragment {
     }
 
     public void filterList(String charText, boolean contacts, boolean nonContacts) {
-        Log.i(TAG, "filterList:");
-        Log.i(TAG, "    chatText: " + charText);
-        Log.i(TAG, "    contacts: " + contacts);
-        Log.i(TAG, "    nonContacts: " + nonContacts);
+//        Log.i(TAG, "filterList:");
+//        Log.i(TAG, "    chatText: " + charText);
+//        Log.i(TAG, "    contacts: " + contacts);
+//        Log.i(TAG, "    nonContacts: " + nonContacts);
         ArrayList<NumberItem> temp = new ArrayList<>();
         numbersList.clear();
 
@@ -140,16 +134,15 @@ public class NumbersFragment extends Fragment {
                         || entry.getFormattedNumber().contains(charText)
                         || (entry.getContactName() != null
                         && entry.getContactName().toLowerCase().contains(charText.toLowerCase()))){
-//                    Log.i("Number", "number matched: "+entry.getNumber());
                     numbersList.add(entry);
                 }
             }
         }
         adapter.notifyDataSetChanged();
-        this.ifListEmptyShowNoResults();
+        this.checkNumberOfResults();
     }
 
-    //Need to do this evertime, in case the user changes a contact name
+    //Need to do this every time, in case the user changes a contact name
     private String getContactName(Context context, String phoneNumber) {
         String contactName = null;
         if(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)
@@ -172,9 +165,7 @@ public class NumbersFragment extends Fragment {
     private static Bitmap retrieveContactPhoto(Context context, String number) {
         String contactId = null;
         Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
-
         String[] projection = new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME, ContactsContract.PhoneLookup._ID};
-
         Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
 
         if (cursor != null && cursor.moveToNext()) {
@@ -216,23 +207,12 @@ public class NumbersFragment extends Fragment {
                 DataContract.NumbersTable.MISSED_COUNT
         };
 
-        //specify read order based on number
-//        String sortOrder = DataContract.NumbersTable.NUMBER + " ASC";
-
         //fetch the data from the database as specified
-        database.beginTransaction();
         Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME, projection, null, null, null, null, null);
-        database.setTransactionSuccessful();
-        database.endTransaction();
         if(cursor.moveToFirst()){
             do{
-                //NumberItem(long num, int recent, String contact, String notes)
-
                 long number = cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NUMBER));
-//                Log.i(TAG, "Number: "+number);
-
                 String contact = getContactName(getContext(), Long.toString(number));
-
                 NumberItem existingNumber = new NumberItem(number,
                         cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.MOST_RECENT)),
                         contact,
@@ -245,7 +225,7 @@ public class NumbersFragment extends Fragment {
                     //then the number is in contacts
                     numberContactList.add(existingNumber);
 
-                    //And get the contact image
+                    //get the contact image
                     Bitmap bitmap = retrieveContactPhoto(getContext(), Long.toString(existingNumber.getNumber()));
                     if(bitmap != null){
                         Log.i(TAG, "Bitmap NOT null");
@@ -255,17 +235,11 @@ public class NumbersFragment extends Fragment {
                     //then the number is NOT in contacts
                     numberNonContactList.add(existingNumber);
                 }
-
-                //cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.CONTACT_NAME))
-
-//                numbersList.add(existingNumber);
-//                numbersListOriginal.add(existingNumber);
             } while (cursor.moveToNext());
         }
 
         Collections.sort(numberNonContactList);
         Collections.sort(numberContactList);
-
 
         //The following ensures that non-contacts will be above contacts
         numbersList.addAll(numberNonContactList);
@@ -276,8 +250,8 @@ public class NumbersFragment extends Fragment {
         cursor.close();
     }
 
-    private void ifListEmptyShowNoResults(){
-        Log.i(TAG, "ifListEmptyShowNoResults, empty? "+(numbersList.size() == 0));
+    private void checkNumberOfResults(){
+        Log.i(TAG, "checkNumberOfResults, empty? "+(numbersList.size() == 0));
         if(numbersList.size() == 0){
             noResults.setVisibility(View.VISIBLE);
             numbersListView.setVisibility(View.GONE);

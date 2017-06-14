@@ -13,18 +13,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Chris on 5/17/2017.
+ * Custom FragmentPagerAdapter for the view pager containing the NumbersFragment and the
+ * HistoryFragment within the main activity.
  */
 public class ListPagerAdapter extends FragmentPagerAdapter {
 
     private final String TAG = getClass().getSimpleName();
-
-    private Map<Integer, String> fragmentTags;
     private Fragment currentFragment;
 
     public ListPagerAdapter(FragmentManager fm) {
         super(fm);
-        fragmentTags = new HashMap<>();
     }
 
     @Override
@@ -37,15 +35,9 @@ public class ListPagerAdapter extends FragmentPagerAdapter {
 //        return Fragment.instantiate(, AFragment.class.getName(), null);
 
         if(position == 0){
-            NumbersFragment numbersFragment = new NumbersFragment();
-            String tag = numbersFragment.getTag();
-            fragmentTags.put(0,tag);
-            return numbersFragment;
+            return new NumbersFragment();
         } else{
-            HistoryFragment historyFragment = new HistoryFragment();
-            String tag = historyFragment.getTag();
-            fragmentTags.put(1, tag);
-            return historyFragment;
+            return new HistoryFragment();
         }
     }
 

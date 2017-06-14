@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,25 +30,23 @@ import com.pewick.calllogger.fragments.NumbersFragment;
 
 import java.util.ArrayList;
 
+/**
+ * The base activity for the application. Contains the ViewPager holding the two main fragments.
+ * Handles the top bar behaviors throughout the application, such as search, filter, and switching
+ * between the NumbersFragment and the HistoryFragment.
+ */
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = getClass().getSimpleName();
 
     private ViewPager pager;
-    private ListPagerAdapter pagerAdapter;
-
     private LinearLayout navigationLayout;
     private TextView numbersListButton;
     private TextView historyListButton;
-
+    private ImageView optionsIcon;
     private LinearLayout searchLayout;
     private EditText searchField;
-    private ImageView searchIcon;
-    private ImageView clearSearchIcon;
     private InputMethodManager inputMethodManager;
-
-    private ImageView optionsIcon;
-
     private PopupMenu numbersPopUp;
     private PopupMenu historyPopUp;
 
@@ -216,8 +215,8 @@ public class MainActivity extends AppCompatActivity {
     private void setUpSearch(){
         searchLayout = (LinearLayout)findViewById(R.id.search_layout);
         searchField = (EditText)findViewById(R.id.search_field);
-        searchIcon = (ImageView)findViewById(R.id.search_icon);
-        clearSearchIcon = (ImageView)findViewById(R.id.clear_search_icon);
+        ImageView searchIcon = (ImageView)findViewById(R.id.search_icon);
+        ImageView clearSearchIcon = (ImageView)findViewById(R.id.clear_search_icon);
 
         searchLayout.setVisibility(View.GONE);
 
@@ -337,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setUpViewPager(){
         pager = (ViewPager)findViewById(R.id.view_pager);
-        pagerAdapter = new ListPagerAdapter(getSupportFragmentManager());
+        PagerAdapter pagerAdapter = new ListPagerAdapter(getSupportFragmentManager());
         pager.setAdapter(pagerAdapter);
         pager.setCurrentItem(0);
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {

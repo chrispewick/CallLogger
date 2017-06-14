@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,7 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -25,10 +24,11 @@ import com.pewick.calllogger.database.DataContract;
 import com.pewick.calllogger.database.DbHelper;
 import com.pewick.calllogger.models.CallItem;
 import com.pewick.calllogger.models.NumberItem;
-import com.pewick.calllogger.views.EditTextPlus;
 
 /**
- * Created by Chris on 6/9/2017.
+ * Custom DialogFragment used to display additional information about a number or contact from the
+ * NumbersFragment. Opened by clicking a NumberItem in the numbers list, the dialog contains all
+ * relevant information about that number.
  */
 public class NumberDialogFragment extends DialogFragment {
     private final String TAG = getClass().getSimpleName();
@@ -37,7 +37,7 @@ public class NumberDialogFragment extends DialogFragment {
 
     private NumberItem numberItem;
 
-    private EditTextPlus notes;
+    private EditText notes;
     TextView titleContact;
 
     @Override
@@ -52,7 +52,6 @@ public class NumberDialogFragment extends DialogFragment {
         view.requestFocus();
         builder.setTitle(null).setView(view);
         dialog = builder.create();
-
         return dialog;
     }
 
@@ -61,7 +60,6 @@ public class NumberDialogFragment extends DialogFragment {
         super.onStart();
         getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        //I could use the view in onCreate to access these view items from onCreate instead, I believe
         this.configureDialogTextContent();
         this.configureCallButton();
         this.configureDoneButton();
@@ -110,12 +108,7 @@ public class NumberDialogFragment extends DialogFragment {
         incomingTotal.setText(incomingTotalStr);
         outgoingTotal.setText(outgoingTotalStr);
 
-        notes = (EditTextPlus) dialog.findViewById(R.id.notes_field);
-        if(numberItem.getNotes() != null){
-            notes.setText(numberItem.getNotes());
-        }
-
-        notes = (EditTextPlus) dialog.findViewById(R.id.notes_field);
+        notes = (EditText) dialog.findViewById(R.id.notes_field);
         notes.setText(this.readNotesFormDatabase());
     }
 
@@ -153,7 +146,7 @@ public class NumberDialogFragment extends DialogFragment {
 
     private String readNotesFormDatabase(){
         //Needed b/c: when user edits the notes, then closes the dialog, the fragment below is still
-        //holding the NumberItem with the old values. Since NOTES is the only value that can be
+        //holding the NumberItem with the old value. Since NOTES is the only value that can be
         //changed, I will simply read the notes from the database each time.
 
         String notes = "";

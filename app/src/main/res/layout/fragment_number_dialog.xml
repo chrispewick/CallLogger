@@ -96,7 +96,7 @@
                 android:text="@string/notes"
                 android:textSize="14sp"/>
 
-            <com.pewick.calllogger.views.EditTextPlus
+            <EditText
                 android:id="@+id/notes_field"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -113,13 +113,18 @@
             android:layout_height="56dp"
             android:orientation="horizontal">
 
+            <View
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:background="@color/black_50_percent"
+                android:layout_gravity="center_vertical"/>
+
             <LinearLayout
                 android:id="@+id/call_button"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:background="@drawable/background_border">
+                android:gravity="center">
 
                 <ImageView
                     android:layout_width="24dp"
@@ -137,13 +142,18 @@
 
             </LinearLayout>
 
+            <View
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:background="@color/black_50_percent"
+                android:layout_gravity="center_vertical"/>
+
             <LinearLayout
                 android:id="@+id/done_button"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:background="@drawable/background_border">
+                android:gravity="center">
 
                 <ImageView
                     android:layout_width="24dp"
@@ -160,8 +170,19 @@
                     android:textSize="18sp"
                     android:textColor="@color/black_75_percent"/>
             </LinearLayout>
+
+            <View
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:background="@color/black_50_percent"
+                android:layout_gravity="center_vertical"/>
         </LinearLayout>
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="@color/black_50_percent"
+            android:layout_gravity="center_vertical"/>
 
     </LinearLayout>
 

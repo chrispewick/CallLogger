@@ -12,16 +12,15 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.ContactsContract;
 import android.support.v4.content.ContextCompat;
-import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 /**
- * Created by Chris on 5/17/2017.
+ * Defines the model for a phone number.
  */
-public class NumberItem implements ILoggerListItem, Comparable<NumberItem>, Parcelable {
+public class NumberItem implements Comparable<NumberItem>, Parcelable {
 
     private final String TAG = getClass().getSimpleName();
 

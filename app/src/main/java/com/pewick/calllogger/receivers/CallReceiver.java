@@ -15,7 +15,7 @@ import com.pewick.calllogger.database.DbHelper;
 import java.util.Date;
 
 /**
- * Created by Chris on 5/15/2017.
+ * Custom receiver to handle call events.
  */
 public class CallReceiver extends PhoneCallReceiver {
 
@@ -189,7 +189,6 @@ public class CallReceiver extends PhoneCallReceiver {
 
         //create insert statement
         sqlValuesStatement.clear();
-
         sqlValuesStatement.put(DataContract.NumbersTable.MOST_RECENT, callId);
 
         String whereClause = String.format("%s = %s" , DataContract.NumbersTable.NUMBER, num);

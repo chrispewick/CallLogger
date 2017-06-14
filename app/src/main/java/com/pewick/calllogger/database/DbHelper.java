@@ -8,32 +8,26 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
-import com.pewick.calllogger.activity.MainActivity;
-import com.pewick.calllogger.adapters.LoggerListAdapter;
 import com.pewick.calllogger.models.CallItem;
 import com.pewick.calllogger.models.NumberItem;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
 
 /**
- * Created by Chris on 5/16/2017.
+ * A helper class to manage database creation and version management.
  */
 public class DbHelper extends SQLiteOpenHelper {
     private final String TAG = getClass().getSimpleName();
 
     // NOTE: if the database schema is updated, this version number MUST be incremented
     public static final int DATABASE_VERSION = 4;
-    //TODO: Change the database name!!
-    public static final String DATABASE_NAME = "MusicPlayer.db";
+    public static final String DATABASE_NAME = "CallLogger.db";
 
     private static DbHelper dbHelperInstance;
     private Context context;
@@ -94,10 +88,11 @@ public class DbHelper extends SQLiteOpenHelper {
 
         // Write logic to preserve the data currently in the user's database, then implement the
         // changes to the database tables, finally, copy the original data back into the new tables.
-        this.readNumbersFromDatabaseVersion3(db);
-        this.readCallsFromDatabase(db);
+
 
         if(oldVersion < 4) {
+            this.readNumbersFromDatabaseVersion3(db);
+            this.readCallsFromDatabase(db);
             //Retrieve all data from the tables in the existing database
             this.readNumbersFromDatabaseVersion3(db);
             this.readCallsFromDatabase(db);
@@ -108,15 +103,6 @@ public class DbHelper extends SQLiteOpenHelper {
             //Ceates the new tables
             db.execSQL(DataContract.SQL_CREATE_CALL_TABLE);
             db.execSQL(DataContract.SQL_CREATE_NUMBERS_TABLE);
-
-            //Need to add the three count tables to original table
-//            db.execSQL("ALTER TABLE " + DataContract.NumbersTable.TABLE_NAME
-//                    + " ADD COLUMN " + DataContract.NumbersTable.OUTGOING_COUNT + " INTEGER DEFAULT 0");
-//            db.execSQL("ALTER TABLE " + DataContract.NumbersTable.TABLE_NAME
-//                    + " ADD COLUMN " + DataContract.NumbersTable.ANSWERED_COUNT + " INTEGER DEFAULT 0");
-//            db.execSQL("ALTER TABLE " + DataContract.NumbersTable.TABLE_NAME
-//                    + " ADD COLUMN " + DataContract.NumbersTable.MISSED_COUNT + " INTEGER DEFAULT 0");
-
 
             for (CallItem callItem : callsList) {
                 this.addCallToTable(db, callItem);
@@ -142,7 +128,6 @@ public class DbHelper extends SQLiteOpenHelper {
                     }
                 }
             }
-
             for (NumberItem numberItem : numbersList) {
                 this.addNumberToTable(db, numberItem);
             }

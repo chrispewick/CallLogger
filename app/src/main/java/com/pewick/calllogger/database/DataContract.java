@@ -3,7 +3,7 @@ package com.pewick.calllogger.database;
 import android.provider.BaseColumns;
 
 /**
- * Created by Chris on 5/16/2017.
+ * Defines the database tables used by the application, and the strings used to create or delete them.
  */
 public class DataContract {
 
