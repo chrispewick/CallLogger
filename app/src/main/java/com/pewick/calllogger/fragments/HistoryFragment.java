@@ -173,6 +173,7 @@ public class HistoryFragment extends Fragment {
 //                    callList.add(entry);
 //                }
                 if(Long.toString(entry.getNumber()).contains(charText)
+                        || entry.getFormattedNumber().contains(charText)
                         || (entry.getContactName() != null
                         && entry.getContactName().toLowerCase().contains(charText.toLowerCase()))){
 //                    Log.i("History", "call matched: "+entry.getNumber());

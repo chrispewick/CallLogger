@@ -137,6 +137,7 @@ public class NumbersFragment extends Fragment {
             for (int i = 0; i < temp.size(); i++) {
                 NumberItem entry = temp.get(i);
                 if(Long.toString(entry.getNumber()).contains(charText)
+                        || entry.getFormattedNumber().contains(charText)
                         || (entry.getContactName() != null
                         && entry.getContactName().toLowerCase().contains(charText.toLowerCase()))){
 //                    Log.i("Number", "number matched: "+entry.getNumber());
