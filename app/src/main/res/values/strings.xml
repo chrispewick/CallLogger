@@ -20,6 +20,9 @@
 
     <string name="search_hint">Search by number or contact name…</string>
 
+    <string name="no_results">No Results</string>
+    <string name="results">Results</string>
+
     <!--For the Numbers dialog fragment -->
     <string name="most_recent">Most Recent:</string>
     <string name="total_in">Total Incoming:</string>
@@ -32,4 +35,6 @@
     <!--For testing UI elements-->
     <string name="number_test">(515) 867–5309</string>
     <string name="date_time_test">5/17/2017 2:57pm</string>
+    <string name="duration_test">1h 35m 6s</string>
+    <string name="results_count_test">150 Results</string>
 </resources>

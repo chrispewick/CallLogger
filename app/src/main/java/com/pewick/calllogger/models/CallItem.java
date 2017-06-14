@@ -3,6 +3,7 @@ package com.pewick.calllogger.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.telecom.Call;
+import android.util.Log;
 
 import com.pewick.calllogger.R;
 
@@ -25,6 +26,7 @@ public class CallItem implements ILoggerListItem, Comparable<CallItem>, Parcelab
     private String inOut;
     private String ansMiss;
     private String contactName;
+    private String duration;
 
     public CallItem(int id, long num, long start, long end, String inOut, String ansMiss){
         this.callId = id;
@@ -33,6 +35,36 @@ public class CallItem implements ILoggerListItem, Comparable<CallItem>, Parcelab
         this.endTime = end;
         this.inOut = inOut;
         this.ansMiss = ansMiss;
+        this.setDuration();
+    }
+
+    private void setDuration(){
+        if(endTime == 0){
+            //Then the call was a missed call, no duration
+            this.duration = "";
+        } else{
+            long time = endTime - startTime;
+            Log.i(TAG, "Time: "+endTime);
+
+            long second = (time / 1000) % 60;
+            long minute = (time / (1000 * 60)) % 60;
+            long hour = (time / (1000 * 60 * 60)) % 24;
+
+            if(hour != 0){
+                this.duration  = String.format("%dh %dm %ds", hour, minute, second);
+            } else if(minute != 0){
+                this.duration  = String.format("%dm %ds", minute, second);
+            } else{
+                this.duration  = String.format("%ds", second);
+            }
+
+
+            Log.i(TAG, "Duration: "+duration);
+        }
+    }
+
+    public String getDuration(){
+        return this.duration;
     }
 
     public String getContactName() {

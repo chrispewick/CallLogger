@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <ImageView
@@ -8,32 +8,49 @@
         android:layout_width="52dp"
         android:layout_height="52dp"
         android:padding="8dp"
-        android:layout_marginStart="4dp"
+        android:layout_marginStart="8dp"
         android:layout_marginEnd="4dp"
         android:src="@drawable/outgoing_made_icon"
         />
 
-    <TextView
-        android:id="@+id/contact_number"
-        android:layout_toEndOf="@+id/call_type_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="26dp"
-        android:paddingStart="4dp"
-        android:paddingEnd="4dp"
-        android:layout_marginTop="2dp"
-        android:textSize="18sp"
-        android:gravity="center"
-        android:text="@string/number_test"
-        />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:paddingStart="16dp">
 
-    <TextView
-        android:id="@+id/date_time"
-        android:layout_below="@+id/contact_number"
-        android:layout_toEndOf="@+id/call_type_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="26dp"
-        android:layout_marginStart="32dp"
-        android:textSize="14sp"
-        android:text="@string/date_time_test"/>
+        <TextView
+            android:id="@+id/contact_number"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:layout_marginTop="2dp"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:textColor="@color/black"
+            android:text="@string/number_test" />
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/call_duration"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="16dp"
+            android:gravity="bottom"
+            android:text="@string/duration_test"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/date_time"
+            android:layout_below="@+id/contact_number"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:layout_marginStart="32dp"
+            android:textSize="14sp"
+            android:textColor="@color/black"
+            android:text="@string/date_time_test"/>
+
+    </RelativeLayout>
+
+
+</LinearLayout>

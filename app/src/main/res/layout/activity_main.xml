@@ -15,10 +15,10 @@
         android:background="@color/colorPrimaryDark">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_alignParentStart="true"
-            android:gravity="center_vertical"
+            android:gravity="center"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:textSize="24sp"

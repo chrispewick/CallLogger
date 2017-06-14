@@ -37,7 +37,6 @@ public class HistoryListAdapter extends ArrayAdapter<CallItem> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent){
-        //get the corresponding care note from the array list for each row
         CallItem item = this.data.get(position);
 
         View cellView = convertView;
@@ -50,6 +49,7 @@ public class HistoryListAdapter extends ArrayAdapter<CallItem> {
             vh = new CallVH();
             vh.number = (TextView) cellView.findViewById(R.id.contact_number);
             vh.dateTime = (TextView) cellView.findViewById(R.id.date_time);
+            vh.callDuration = (TextView) cellView.findViewById(R.id.call_duration);
             vh.callTypeIcon = (ImageView) cellView.findViewById(R.id.call_type_icon);
 
             cellView.setTag(vh);
@@ -59,6 +59,7 @@ public class HistoryListAdapter extends ArrayAdapter<CallItem> {
 
         vh.number.setText(item.getDisplayText());
         vh.dateTime.setText(item.getFormattedDateTime());
+        vh.callDuration.setText(item.getDuration());
         switch(item.getCallType()){
             case 1:
                 //outgoing
@@ -76,13 +77,13 @@ public class HistoryListAdapter extends ArrayAdapter<CallItem> {
                 vh.callTypeIcon.setColorFilter(ContextCompat.getColor(activity,R.color.red));
                 break;
         }
-
         return cellView;
     }
 
-    static class CallVH {
+    private static class CallVH {
         TextView number;
-        ImageView callTypeIcon;
         TextView dateTime;
+        TextView callDuration;
+        ImageView callTypeIcon;
     }
 }

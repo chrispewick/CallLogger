@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.pewick.calllogger.R;
 import com.pewick.calllogger.activity.MainActivity;
@@ -46,6 +47,7 @@ public class NumbersFragment extends Fragment {
 
     private final String TAG = getClass().getSimpleName();
 
+    private TextView noResults;
     private ListView numbersListView;
     private NumbersListAdapter adapter;
 
@@ -66,6 +68,8 @@ public class NumbersFragment extends Fragment {
         adapter = new NumbersListAdapter(getActivity(),numbersList);
         numbersListView.setAdapter(adapter);
 
+        noResults = (TextView) view.findViewById(R.id.no_results);
+
         this.setListEventListeners();
         this.setOnClickListener();
 
@@ -79,6 +83,7 @@ public class NumbersFragment extends Fragment {
         this.readNumbersFromDatabase();
         adapter = new NumbersListAdapter(getActivity(),numbersList);
         numbersListView.setAdapter(adapter);
+        this.ifListEmptyShowNoResults();
     }
 
     private void setOnClickListener(){
@@ -140,6 +145,7 @@ public class NumbersFragment extends Fragment {
             }
         }
         adapter.notifyDataSetChanged();
+        this.ifListEmptyShowNoResults();
     }
 
     //Need to do this evertime, in case the user changes a contact name
@@ -267,5 +273,16 @@ public class NumbersFragment extends Fragment {
         numbersListOriginal.addAll(numberContactList);
 
         cursor.close();
+    }
+
+    private void ifListEmptyShowNoResults(){
+        Log.i(TAG, "ifListEmptyShowNoResults, empty? "+(numbersList.size() == 0));
+        if(numbersList.size() == 0){
+            noResults.setVisibility(View.VISIBLE);
+            numbersListView.setVisibility(View.GONE);
+        } else {
+            noResults.setVisibility(View.GONE);
+            numbersListView.setVisibility(View.VISIBLE);
+        }
     }
 }

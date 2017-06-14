@@ -19,6 +19,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:textSize="26sp"
+        android:textColor="@color/black"
         android:text="@string/number_test"/>
 
 </LinearLayout>

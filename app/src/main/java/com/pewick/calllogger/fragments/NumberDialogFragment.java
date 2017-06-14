@@ -53,7 +53,6 @@ public class NumberDialogFragment extends DialogFragment {
         builder.setTitle(null).setView(view);
         dialog = builder.create();
 
-
         return dialog;
     }
 
@@ -104,8 +103,6 @@ public class NumberDialogFragment extends DialogFragment {
             }
         }
 
-        Log.i(TAG, "Incoming count: "+(numberItem.getAnsweredCount() + numberItem.getMissedCount()));
-        Log.i(TAG, "Outgoing count: "+numberItem.getOutgoingCount());
         TextView incomingTotal = (TextView) dialog.findViewById(R.id.total_incoming);
         TextView outgoingTotal = (TextView) dialog.findViewById(R.id.total_outgoing);
         String incomingTotalStr = getResources().getString(R.string.total_in) + " " + (numberItem.getAnsweredCount() + numberItem.getMissedCount());
@@ -120,7 +117,6 @@ public class NumberDialogFragment extends DialogFragment {
 
         notes = (EditTextPlus) dialog.findViewById(R.id.notes_field);
         notes.setText(this.readNotesFormDatabase());
-        //TODO: handle total incoming and outgoing
     }
 
     private CallItem readMostRecentCallFromDatabase(){
@@ -146,11 +142,8 @@ public class NumberDialogFragment extends DialogFragment {
                     cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.CallTable.END_TIME)),
                     cursor.getString(cursor.getColumnIndexOrThrow(DataContract.CallTable.INCOMING_OUTGOING)),
                     cursor.getString(cursor.getColumnIndexOrThrow(DataContract.CallTable.ANSWERED_MISSED)));
-
-
         } else{
             Log.i(TAG,"Most recent was null!"); //This could happen if I decide to allow users to delete calls from app
-
         }
         cursor.close();
         database.close();
@@ -176,6 +169,7 @@ public class NumberDialogFragment extends DialogFragment {
         if(cursor.moveToFirst()){
             notes = cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NOTES));
         }
+        cursor.close();
         return notes;
     }
 
@@ -184,7 +178,6 @@ public class NumberDialogFragment extends DialogFragment {
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO: Save the notes to the database
                 DbHelper dbHelper = DbHelper.getInstance(getActivity());
                 SQLiteDatabase database = dbHelper.getReadableDatabase();
                 ContentValues cv = new ContentValues();

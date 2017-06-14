@@ -20,13 +20,11 @@ public class ListPagerAdapter extends FragmentPagerAdapter {
     private final String TAG = getClass().getSimpleName();
 
     private Map<Integer, String> fragmentTags;
-    private FragmentManager fragmentManager;
     private Fragment currentFragment;
 
     public ListPagerAdapter(FragmentManager fm) {
         super(fm);
         fragmentTags = new HashMap<>();
-        this.fragmentManager = fm;
     }
 
     @Override
@@ -51,18 +49,6 @@ public class ListPagerAdapter extends FragmentPagerAdapter {
         }
     }
 
-//    @Override
-//    public Object instantiateItem(ViewGroup container, int position) {
-//        Object obj = super.instantiateItem(container, position);
-//        if (obj instanceof Fragment) {
-//            // record the fragment tag here.
-//            Fragment f = (Fragment) obj;
-//            String tag = f.getTag();
-//            fragmentTags.put(position, tag);
-//        }
-//        return obj;
-//    }
-
     public Fragment getCurrentFragment(){
         return currentFragment;
     }
@@ -74,14 +60,4 @@ public class ListPagerAdapter extends FragmentPagerAdapter {
         }
         super.setPrimaryItem(container, position, object);
     }
-
-    public Fragment getFragment(int position){
-        Log.i(TAG, "getFrag @ "+position);
-        String tag = fragmentTags.get(position);
-        Log.i(TAG, "Fragment Tag: "+tag);
-        if (tag == null)
-            return null;
-        return fragmentManager.findFragmentByTag(tag);
-    }
-
 }

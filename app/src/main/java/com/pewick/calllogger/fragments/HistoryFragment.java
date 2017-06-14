@@ -23,6 +23,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.pewick.calllogger.R;
 import com.pewick.calllogger.activity.MainActivity;
@@ -43,6 +44,8 @@ public class HistoryFragment extends Fragment {
 
     private final String TAG = getClass().getSimpleName();
 
+    private TextView noResults;
+    private TextView numberResults;
     private ListView callListView;
     private HistoryListAdapter adapter;
 
@@ -63,6 +66,9 @@ public class HistoryFragment extends Fragment {
         adapter = new HistoryListAdapter(getActivity(), callList);
         callListView.setAdapter(adapter);
 
+        noResults = (TextView) view.findViewById(R.id.no_results);
+        numberResults = (TextView) view .findViewById(R.id.number_results);
+
         this.setListEventListeners();
         this.setOnClickListener();
 
@@ -76,6 +82,7 @@ public class HistoryFragment extends Fragment {
         this.readCallsFromDatabase();
         adapter = new HistoryListAdapter(getActivity(), callList);
         callListView.setAdapter(adapter);
+        this.ifListEmptyShowNoResults();
     }
 
     public void filterList(String charText, boolean contacts, boolean nonContacts, boolean incoming, boolean outgoing){
@@ -175,6 +182,7 @@ public class HistoryFragment extends Fragment {
             }
         }
         adapter.notifyDataSetChanged();
+        this.ifListEmptyShowNoResults();
     }
 
     private void setOnClickListener(){
@@ -224,6 +232,79 @@ public class HistoryFragment extends Fragment {
         return contactName;
     }
 
+    private void readInitialCallsFromDatabase(){
+        Log.i(TAG,"readInitialCallsFromDatabase");
+        Calendar startTime = Calendar.getInstance();
+        callList = new ArrayList<>();
+        callListOriginal = new ArrayList<>();
+        contactsCallList = new ArrayList<>();
+        noncontactsCallList = new ArrayList<>();
+        DbHelper dbHelper = DbHelper.getInstance(getActivity());
+        SQLiteDatabase database = dbHelper.getReadableDatabase();
+        String[] projection = {
+                DataContract.CallTable.CALL_ID,
+                DataContract.CallTable.NUMBER,
+                DataContract.CallTable.START_TIME,
+                DataContract.CallTable.END_TIME,
+                DataContract.CallTable.INCOMING_OUTGOING,
+                DataContract.CallTable.ANSWERED_MISSED
+        };
+
+        //specify read order based on number
+        String sortOrder = DataContract.CallTable.START_TIME + " DESC";
+
+        //fetch the data from the database as specified
+//        database.beginTransaction();
+        Cursor cursor = database.query(DataContract.CallTable.TABLE_NAME, projection, null, null, null, null, sortOrder);
+//        database.setTransactionSuccessful();
+//        database.endTransaction();
+        int count = 0;
+        if(cursor.moveToFirst()){
+            do{
+                //public CallItem(int id, long num, long start, long end, String inOut, String ansMiss){
+
+                CallItem existingCall = new CallItem(cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.CallTable.CALL_ID)),
+                        cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.CallTable.NUMBER)),
+                        cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.CallTable.START_TIME)),
+                        cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.CallTable.END_TIME)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(DataContract.CallTable.INCOMING_OUTGOING)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(DataContract.CallTable.ANSWERED_MISSED)));
+
+                existingCall.setContactName(getContactName(getActivity(), Long.toString(existingCall.getNumber())));
+
+                if(existingCall.getContactName() != null){
+//                    Log.i(TAG, "contactName null");
+                    //Then this call was from a contact
+                    contactsCallList.add(existingCall);
+                } else{
+//                    Log.i(TAG, "contactName NOT null");
+                    //Then this call was not from a contact
+                    noncontactsCallList.add(existingCall);
+                }
+
+                callList.add(existingCall);
+                callListOriginal.add(existingCall);
+                count++;
+            } while (cursor.moveToNext() && count < 50);
+        }
+//        database.setTransactionSuccessful();
+//        database.endTransaction();
+        cursor.close();
+
+//        Collections.sort(callList);
+//        Collections.sort(callListOriginal);
+//        callListOriginal.addAll(callList);
+
+        Calendar endTime = Calendar.getInstance();
+        Log.i(TAG, "Time: "+ (endTime.getTimeInMillis() - startTime.getTimeInMillis()));
+        Log.i(TAG, "callList size: "+callList.size());
+        Log.i(TAG, "contacts size: "+contactsCallList.size());
+        Log.i(TAG, "non-contacts size: "+noncontactsCallList.size());
+
+//        callListOriginal = new ArrayList<>();
+//        callListOriginal.addAll(callList);
+    }
+
     private void readCallsFromDatabase(){
         Log.i(TAG,"readCallsFromDatabase");
         Calendar startTime = Calendar.getInstance();
@@ -243,7 +324,6 @@ public class HistoryFragment extends Fragment {
         };
 
         //specify read order based on number
-        //TODO: Handle contacts?
         String sortOrder = DataContract.CallTable.START_TIME + " DESC";
 
         //fetch the data from the database as specified
@@ -294,5 +374,24 @@ public class HistoryFragment extends Fragment {
 
 //        callListOriginal = new ArrayList<>();
 //        callListOriginal.addAll(callList);
+    }
+
+    private void ifListEmptyShowNoResults(){
+        Log.i(TAG, "ifListEmptyShowNoResults, empty? "+(callList.size() == 0));
+        if(callList.size() == 0){
+            noResults.setVisibility(View.VISIBLE);
+            callListView.setVisibility(View.GONE);
+            numberResults.setVisibility(View.GONE);
+        } else {
+            noResults.setVisibility(View.GONE);
+            callListView.setVisibility(View.VISIBLE);
+            numberResults.setVisibility(View.VISIBLE);
+            this.showNumberOfResults();
+        }
+    }
+
+    private void showNumberOfResults(){
+        String numResults = callList.size() +" "+ getResources().getString(R.string.results);
+        numberResults.setText(numResults);
     }
 }

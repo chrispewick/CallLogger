@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
         this.setUpViewPager();
         this.setUpSearch();
         this.setUpOptionsMenu();
-//        this.setUpViewPager();
     }
 
     private void setUpOptionsMenu(){
@@ -94,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
         historyPopUp.getMenu().getItem(1).setChecked(true);
         historyPopUp.getMenu().getItem(2).setChecked(true);
         historyPopUp.getMenu().getItem(3).setChecked(true);
-
         historyPopUp.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
@@ -140,7 +138,6 @@ public class MainActivity extends AppCompatActivity {
                         return false;
                     }
                 });
-
                 return false;
             }
         });
@@ -152,7 +149,6 @@ public class MainActivity extends AppCompatActivity {
         inflater.inflate(R.menu.options_menu_numbers, numbersPopUp.getMenu());
         numbersPopUp.getMenu().getItem(0).setChecked(true);
         numbersPopUp.getMenu().getItem(1).setChecked(true);
-
         numbersPopUp.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
@@ -188,7 +184,6 @@ public class MainActivity extends AppCompatActivity {
                         return false;
                     }
                 });
-
                 return false;
             }
         });
@@ -290,9 +285,14 @@ public class MainActivity extends AppCompatActivity {
                 if(pager.getCurrentItem() == 0){
                     boolean contactsF = numbersPopUp.getMenu().getItem(0).isChecked();
                     boolean noncontactsF = numbersPopUp.getMenu().getItem(1).isChecked();
-                    ((NumbersFragment)((ListPagerAdapter) pager.getAdapter()).getCurrentFragment())
-                            .filterList(text, contactsF, noncontactsF);
-                    //TODO: Crashes at above. Called after onStart
+                    try {
+                        //For some reason, this is called before the fragment is initialized,
+                        // after the app has been in the background for some time.
+                        ((NumbersFragment) ((ListPagerAdapter) pager.getAdapter()).getCurrentFragment())
+                                .filterList(text, contactsF, noncontactsF);
+                    } catch (NullPointerException e){
+                        e.printStackTrace();
+                    }
                 } else {
 //                    ((HistoryFragment)((ListPagerAdapter) pager.getAdapter()).getCurrentFragment()).filterList(text);
 
@@ -300,8 +300,12 @@ public class MainActivity extends AppCompatActivity {
                     boolean noncontactsF = historyPopUp.getMenu().getItem(1).isChecked();
                     boolean incomingF = historyPopUp.getMenu().getItem(2).isChecked();
                     boolean outgoingF = historyPopUp.getMenu().getItem(3).isChecked();
-                    ((HistoryFragment)((ListPagerAdapter) pager.getAdapter()).getCurrentFragment())
-                            .filterList(text,contactsF, noncontactsF, incomingF, outgoingF);
+                    try {
+                        ((HistoryFragment) ((ListPagerAdapter) pager.getAdapter()).getCurrentFragment())
+                                .filterList(text, contactsF, noncontactsF, incomingF, outgoingF);
+                    } catch(NullPointerException e){
+                        e.printStackTrace();
+                    }
                 }
             }
         });
@@ -332,12 +336,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUpViewPager(){
-
         pager = (ViewPager)findViewById(R.id.view_pager);
         pagerAdapter = new ListPagerAdapter(getSupportFragmentManager());
         pager.setAdapter(pagerAdapter);
         pager.setCurrentItem(0);
-
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -366,8 +368,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
-
     }
 
     @Override
@@ -403,9 +403,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUpNavigationBar(){
-//        final TextView numbersListButton = (TextView) findViewById(R.id.numbers_list_button);
-//        final TextView historyListButton = (TextView) findViewById(R.id.history_list_button);
-
         navigationLayout = (LinearLayout)findViewById(R.id.navigation_layout);
         numbersListButton = (TextView) findViewById(R.id.numbers_list_button);
         historyListButton = (TextView) findViewById(R.id.history_list_button);

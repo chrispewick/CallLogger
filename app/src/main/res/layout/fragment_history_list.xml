@@ -10,16 +10,26 @@
 
     </ListView>
 
-    <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="22dp"-->
-        <!--android:layout_alignParentEnd="true"-->
-        <!--android:layout_alignParentBottom="true"-->
-        <!--android:layout_marginEnd="8dp"-->
-        <!--android:layout_marginBottom="12dp"-->
-        <!--android:textSize="18sp"-->
-        <!--android:textColor="@color/black_30_percent"-->
-        <!--android:text="@string/show"/>-->
+    <TextView
+        android:id="@+id/no_results"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="@string/no_results"
+        android:textSize="24sp"/>
+
+    <TextView
+        android:id="@+id/number_results"
+        android:layout_width="wrap_content"
+        android:layout_height="22dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="12dp"
+        android:textSize="16sp"
+        android:textColor="@color/black_30_percent"
+        android:text="@string/results_count_test"/>
 
 
 </RelativeLayout>
