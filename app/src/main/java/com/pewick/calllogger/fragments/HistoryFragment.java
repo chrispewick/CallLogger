@@ -70,7 +70,6 @@ public class HistoryFragment extends Fragment {
         numberResults = (TextView) view .findViewById(R.id.number_results);
 
         this.setListEventListeners();
-        this.setOnClickListener();
 
         return view;
     }
@@ -183,25 +182,6 @@ public class HistoryFragment extends Fragment {
         }
         adapter.notifyDataSetChanged();
         this.ifListEmptyShowNoResults();
-    }
-
-    private void setOnClickListener(){
-        callListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                //TODO: Open CallDialogFragment
-                CallItem item = (CallItem) callList.get(position);
-
-                Bundle args = new Bundle();
-                args.putParcelable("call_item", item);
-
-                CallDialogFragment dialog = new CallDialogFragment();
-                dialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.NewDialog);
-                dialog.setArguments(args);
-
-                dialog.show(getActivity().getFragmentManager(), null);
-            }
-        });
     }
 
     private void setListEventListeners(){

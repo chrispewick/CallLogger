@@ -25,20 +25,17 @@ public class CallReceiver extends PhoneCallReceiver {
     private SQLiteDatabase database;
 
     @Override
-    protected void onIncomingCallReceived(Context ctx, String number, Date start)
-    {
+    protected void onIncomingCallReceived(Context ctx, String number, Date start){
         number = removeLeadingOne(number);
         dbHelper = DbHelper.getInstance(ctx);
         Toast.makeText(ctx, "Incoming Received", Toast.LENGTH_SHORT).show();
         Log.i(TAG,"Incoming Received: "+number);
 
         //Don't need to add the call to the tables until call has ended (or was missed)
-        //TODO: Confirm that ignoring is counted as missed.
     }
 
     @Override
-    protected void onIncomingCallAnswered(Context ctx, String number, Date start)
-    {
+    protected void onIncomingCallAnswered(Context ctx, String number, Date start){
         number = removeLeadingOne(number);
         dbHelper = DbHelper.getInstance(ctx);
         Toast.makeText(ctx, "Incoming answered Received", Toast.LENGTH_SHORT).show();
@@ -48,8 +45,7 @@ public class CallReceiver extends PhoneCallReceiver {
     }
 
     @Override
-    protected void onIncomingCallEnded(Context ctx, String number, Date start, Date end)
-    {
+    protected void onIncomingCallEnded(Context ctx, String number, Date start, Date end){
         number = removeLeadingOne(number);
         dbHelper = DbHelper.getInstance(ctx);
         Toast.makeText(ctx, "Incoming ended Received", Toast.LENGTH_SHORT).show();
@@ -60,7 +56,6 @@ public class CallReceiver extends PhoneCallReceiver {
 
         //Insert the call into the CallTable
         addCallToTable(ctx, number, maxId+1, start, end, "incoming", "answered");
-        //TODO: confirm that this is not called when call is missed.
 
         //Check if the number has been logged yet
         if(isNumberInDatabase(number)){
@@ -70,12 +65,12 @@ public class CallReceiver extends PhoneCallReceiver {
         } else{
             //Then the number has not been logged before, so add to table
             addNumberToTable(ctx, number, maxId+1);
+            incrementAnsweredCount(ctx, number);
         }
     }
 
     @Override
-    protected void onOutgoingCallStarted(Context ctx, String number, Date start)
-    {
+    protected void onOutgoingCallStarted(Context ctx, String number, Date start){
         number = removeLeadingOne(number);
         dbHelper = DbHelper.getInstance(ctx);
         Toast.makeText(ctx, "Outgoing started Received", Toast.LENGTH_SHORT).show();
@@ -85,8 +80,7 @@ public class CallReceiver extends PhoneCallReceiver {
     }
 
     @Override
-    protected void onOutgoingCallEnded(Context ctx, String number, Date start, Date end)
-    {
+    protected void onOutgoingCallEnded(Context ctx, String number, Date start, Date end){
         number = removeLeadingOne(number);
         dbHelper = DbHelper.getInstance(ctx);
         Toast.makeText(ctx, "Outgoing ended Received", Toast.LENGTH_SHORT).show();
@@ -106,12 +100,12 @@ public class CallReceiver extends PhoneCallReceiver {
         } else{
             //Then the number has not been logged before, so add to table
             addNumberToTable(ctx, number, maxId+1);
+            incrementOutgoingCount(ctx, number);
         }
     }
 
     @Override
-    protected void onMissedCall(Context ctx, String number, Date start)
-    {
+    protected void onMissedCall(Context ctx, String number, Date start){
         number = removeLeadingOne(number);
         dbHelper = DbHelper.getInstance(ctx);
         Toast.makeText(ctx, "Missed Received", Toast.LENGTH_SHORT).show();
@@ -131,11 +125,11 @@ public class CallReceiver extends PhoneCallReceiver {
         } else{
             //Then the number has not been logged before, so add to table
             addNumberToTable(ctx, number, maxId+1);
+            incrementMissedCount(ctx, number);
         }
     }
 
     private String removeLeadingOne(String number){
-        //TODO: handle area code if the user does not add dial it. Probably need to use location.
         //Is this safe? Would it interfere with non-local numbers? Maybe just out of country?
         if(number.length() == 11){
             return number.substring(1);
@@ -216,7 +210,6 @@ public class CallReceiver extends PhoneCallReceiver {
                 + " WHERE " + DataContract.NumbersTable.NUMBER
                 + "= '"+ num + "'";
 
-//        Cursor cur = database.query(DataContract.NumbersTable.TABLE_NAME, )
         Cursor cursor = database.rawQuery(searchQuery, null);
         boolean exists = (cursor.getCount() > 0);
         cursor.close();
@@ -233,24 +226,12 @@ public class CallReceiver extends PhoneCallReceiver {
                 + DataContract.CallTable.CALL_ID + ") FROM " + DataContract.CallTable.TABLE_NAME);
 
         int id = (int) stmt.simpleQueryForLong();
-
-//        String query = "SELECT MAX(call_id) AS _id FROM db_table";
         Cursor cursor = database.rawQuery(query, null);
 
-//        int id = 0;
-//        if(cursor.moveToFirst()){
-//            id = cursor.getInt(cursor.getColumnIndex(DataContract.CallTable.CALL_ID));
-//        }
-
-//        if(cursor.getCount() > 0){
-//            cursor.moveToFirst();
-//            id = cursor.getInt(cursor.getColumnIndex(DataContract.CallTable.CALL_ID));
-//        }
         cursor.close();
         database.close();
 
         Log.i("Receiver","MaxId: "+id);
-
         return id;
     }
 

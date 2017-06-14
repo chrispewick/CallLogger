@@ -44,8 +44,6 @@ public class CallItem implements ILoggerListItem, Comparable<CallItem>, Parcelab
             this.duration = "";
         } else{
             long time = endTime - startTime;
-            Log.i(TAG, "Time: "+endTime);
-
             long second = (time / 1000) % 60;
             long minute = (time / (1000 * 60)) % 60;
             long hour = (time / (1000 * 60 * 60)) % 24;
@@ -57,9 +55,6 @@ public class CallItem implements ILoggerListItem, Comparable<CallItem>, Parcelab
             } else{
                 this.duration  = String.format("%ds", second);
             }
-
-
-            Log.i(TAG, "Duration: "+duration);
         }
     }
 
