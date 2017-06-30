@@ -50,11 +50,12 @@ public class HistoryFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.i(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_history_list, container, false);
         callList = new ArrayList<>();
         callListView = (ListView) view.findViewById(R.id.history_list);
-        adapter = new HistoryListAdapter(getActivity(), callList);
-        callListView.setAdapter(adapter);
+//        adapter = new HistoryListAdapter(getActivity(), callList);
+//        callListView.setAdapter(adapter);
 
         noResults = (TextView) view.findViewById(R.id.no_results);
         numberResults = (TextView) view .findViewById(R.id.number_results);
@@ -66,7 +67,7 @@ public class HistoryFragment extends Fragment {
 
     @Override
     public void onResume() {
-//        Log.i(TAG, "onResume");
+        Log.i(TAG, "onResume");
         super.onResume();
         this.readCallsFromDatabase();
         adapter = new HistoryListAdapter(getActivity(), callList);
@@ -196,6 +197,7 @@ public class HistoryFragment extends Fragment {
     private void readCallsFromDatabase(){
         Log.i(TAG,"readCallsFromDatabase");
         Calendar startTime = Calendar.getInstance();
+
         callList = new ArrayList<>();
         callListOriginal = new ArrayList<>();
         contactsCallList = new ArrayList<>();
@@ -216,6 +218,7 @@ public class HistoryFragment extends Fragment {
 
         //fetch the data from the database as specified
         Cursor cursor = database.query(DataContract.CallTable.TABLE_NAME, projection, null, null, null, null, sortOrder);
+//        Cursor cursor = database.rawQuery("select * from "+DataContract.CallTable.TABLE_NAME, null);
         if(cursor.moveToFirst()){
             do{
                 //public CallItem(int id, long num, long start, long end, String inOut, String ansMiss){
@@ -242,8 +245,8 @@ public class HistoryFragment extends Fragment {
         }
         cursor.close();
 
-//        Calendar endTime = Calendar.getInstance();
-//        Log.i(TAG, "Time: "+ (endTime.getTimeInMillis() - startTime.getTimeInMillis()));
+        Calendar endTime = Calendar.getInstance();
+        Log.i(TAG, "Time: "+ (endTime.getTimeInMillis() - startTime.getTimeInMillis()));
 //        Log.i(TAG, "callList size: "+callList.size());
 //        Log.i(TAG, "contacts size: "+contactsCallList.size());
 //        Log.i(TAG, "non-contacts size: "+ nonContactsCallList.size());

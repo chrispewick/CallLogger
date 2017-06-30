@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@drawable/background_dialog"
     >
 
     <LinearLayout
@@ -13,7 +13,8 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="16dp"
+        >
 
         <TextView
             android:id="@+id/title_contact_name"
@@ -22,7 +23,7 @@
             android:gravity="center"
             android:text="@string/contacts"
             android:textSize="24sp"
-            android:textColor="@color/black_75_percent"/>
+            android:textColor="@color/white"/>
 
         <TextView
             android:id="@+id/title_number"
@@ -31,7 +32,7 @@
             android:gravity="center"
             android:text="@string/number_test"
             android:textSize="24sp"
-            android:textColor="@color/black_75_percent"/>
+            android:textColor="@color/white"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -39,7 +40,7 @@
             android:gravity="center_vertical"
             android:text="@string/most_recent"
             android:textSize="18sp"
-            android:textColor="@color/black_75_percent"/>
+            android:textColor="@color/white"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -61,7 +62,7 @@
                 android:gravity="center"
                 android:text="@string/date_time_test"
                 android:textSize="18sp"
-                android:textColor="@color/black_75_percent"/>
+                android:textColor="@color/white"/>
         </LinearLayout>
 
         <TextView
@@ -71,7 +72,7 @@
             android:text="@string/total_in"
             android:gravity="center_vertical"
             android:textSize="18sp"
-            android:textColor="@color/black_75_percent"/>
+            android:textColor="@color/white"/>
 
         <TextView
             android:id="@+id/total_outgoing"
@@ -80,7 +81,7 @@
             android:text="@string/total_out"
             android:gravity="center_vertical"
             android:textSize="18sp"
-            android:textColor="@color/black_75_percent"/>
+            android:textColor="@color/white"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -94,7 +95,8 @@
                 android:layout_height="20dp"
                 android:layout_marginStart="8dp"
                 android:text="@string/notes"
-                android:textSize="14sp"/>
+                android:textSize="14sp"
+                android:textColor="@color/black_10_percent"/>
 
             <EditText
                 android:id="@+id/notes_field"
@@ -105,7 +107,7 @@
                 android:textCursorDrawable="@null"
                 android:background="@color/transparent"
                 android:textSize="18sp"
-                android:textColor="@color/black_75_percent"/>
+                android:textColor="@color/white"/>
         </LinearLayout>
         
         <LinearLayout
@@ -124,21 +126,23 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center">
+                android:gravity="center"
+                android:background="@color/green_dark">
 
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginEnd="8dp"
                     android:src="@drawable/phone_icon"
-                    android:layout_gravity="center"/>
+                    android:layout_gravity="center"
+                    android:tint="@color/white"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:gravity="center"
                     android:text="@string/call"
                     android:textSize="18sp"
-                    android:textColor="@color/black_75_percent"/>
+                    android:textColor="@color/white"/>
 
             </LinearLayout>
 
@@ -153,14 +157,16 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center">
+                android:gravity="center"
+                android:background="@color/colorPrimary">
 
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginEnd="8dp"
                     android:src="@drawable/checkmark"
-                    android:layout_gravity="center"/>
+                    android:layout_gravity="center"
+                    android:tint="@color/white"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -168,7 +174,7 @@
                     android:gravity="center"
                     android:text="@string/done"
                     android:textSize="18sp"
-                    android:textColor="@color/black_75_percent"/>
+                    android:textColor="@color/white"/>
             </LinearLayout>
 
             <View

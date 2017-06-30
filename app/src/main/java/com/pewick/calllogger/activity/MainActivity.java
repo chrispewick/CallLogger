@@ -411,7 +411,6 @@ public class MainActivity extends AppCompatActivity {
         numbersListButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO:Handle color change
                 pager.setCurrentItem(0);
                 numbersListButton.setTextColor(ResourcesCompat.getColor(getResources(), R.color.white, null));
                 historyListButton.setTextColor(ResourcesCompat.getColor(getResources(), R.color.white_transparent, null));
@@ -421,7 +420,6 @@ public class MainActivity extends AppCompatActivity {
         historyListButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO: Handle color change
                 pager.setCurrentItem(1);
                 historyListButton.setTextColor(ResourcesCompat.getColor(getResources(), R.color.white, null));
                 numbersListButton.setTextColor(ResourcesCompat.getColor(getResources(), R.color.white_transparent, null));

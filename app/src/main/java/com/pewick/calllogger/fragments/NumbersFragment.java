@@ -228,7 +228,7 @@ public class NumbersFragment extends Fragment {
                     //get the contact image
                     Bitmap bitmap = retrieveContactPhoto(getContext(), Long.toString(existingNumber.getNumber()));
                     if(bitmap != null){
-                        Log.i(TAG, "Bitmap NOT null");
+//                        Log.i(TAG, "Bitmap NOT null");
                         existingNumber.setContactImage(bitmap);
                     }
                 } else{

@@ -1,18 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#3F51B5</color>
+    <!--<color name="colorPrimary">#3F51B5</color>-->
+    <!--<color name="colorPrimaryDark">#303F9F</color>-->
+    <!--<color name="colorAccent">#3F51B5</color>-->
 
+    <color name="colorPrimary">#1B608C</color>
+    <color name="colorPrimaryDark">#1B608C</color>
+    <color name="colorAccent">#1B709C</color>
+    <!--1B708C-->
+    <!--<color name="colorPrimary"> #ffaa00 </color>-->
+    <!--<color name="colorPrimaryDark"> #ff7800 </color>-->
+    <!--<color name="colorAccent"> #ffaa00 </color>-->
+
+
+    <color name="gradientStart">#F2F2F2</color>
+    <color name="gradientEnd">#ffffff</color>
+    <color name="dialogGradientStart">#303030</color>
+    <color name="dialogGradientEnd">#1B608C</color>
+
+    <!--<color name="gradientStart">#808080</color>-->
+    <!--<color name="gradientEnd">#1B608C</color>-->
+
+    <!--<color name="gradientStart">#ffffff</color>-->
+    <!--<color name="gradientEnd">#ffaa00</color>-->
 
     <color name="white">#FFFFFFFF</color>
     <color name="white_transparent">#a0FFFFFF</color>
     <color name="black">#000000</color>
+    <color name="black_90_percent">#191919</color>
     <color name="black_75_percent">#404040</color>
     <color name="black_50_percent">#808080</color>
     <color name="black_30_percent">#b3b3b3</color>
     <color name="black_10_percent">#E6E6E6</color>
     <color name="transparent">#00000000</color>
+    <color name="gray_transparent">#15FFFFFF</color>
+
+    <color name="green_dark">#1e8413</color>
 
     <color name="blue">#1235fd</color>
     <color name="green">#2ec403</color>

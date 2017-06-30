@@ -20,14 +20,16 @@ import java.util.Date;
 public class CallReceiver extends PhoneCallReceiver {
 
     private final String TAG = getClass().getSimpleName();
+    private final String INCOMING = "incoming";
+    private final String OUTGOING = "outgoing";
+    private final String ANSWERED = "answered";
+    private final String MISSED = "missed";
 
     private DbHelper dbHelper;
     private SQLiteDatabase database;
 
     @Override
     protected void onIncomingCallReceived(Context ctx, String number, Date start){
-        number = removeLeadingOne(number);
-        dbHelper = DbHelper.getInstance(ctx);
         Toast.makeText(ctx, "Incoming Received", Toast.LENGTH_SHORT).show();
         Log.i(TAG,"Incoming Received: "+number);
 
@@ -36,8 +38,6 @@ public class CallReceiver extends PhoneCallReceiver {
 
     @Override
     protected void onIncomingCallAnswered(Context ctx, String number, Date start){
-        number = removeLeadingOne(number);
-        dbHelper = DbHelper.getInstance(ctx);
         Toast.makeText(ctx, "Incoming answered Received", Toast.LENGTH_SHORT).show();
         Log.i(TAG,"Incoming answered Received: "+number);
 
@@ -55,24 +55,47 @@ public class CallReceiver extends PhoneCallReceiver {
         int maxId = this.getMaxCallId();
 
         //Insert the call into the CallTable
-        addCallToTable(ctx, number, maxId+1, start, end, "incoming", "answered");
+        addCallToTable(ctx, number, maxId+1, start, end, INCOMING, ANSWERED);
 
         //Check if the number has been logged yet
         if(isNumberInDatabase(number)){
             //Then the number has been logged before, just update most recent
-            updateMostRecentCall(ctx, number, start, maxId+1);
-            incrementAnsweredCount(ctx, number);
+            updateMostRecentCall(ctx, number, start, maxId+1, ANSWERED);
+//            incrementAnsweredCount(ctx, number);
         } else{
             //Then the number has not been logged before, so add to table
-            addNumberToTable(ctx, number, maxId+1);
-            incrementAnsweredCount(ctx, number);
+            addNumberToTable(ctx, number, maxId+1, ANSWERED);
+//            incrementAnsweredCount(ctx, number);
+        }
+    }
+
+    @Override
+    protected void onMissedCall(Context ctx, String number, Date start){
+        number = removeLeadingOne(number);
+        dbHelper = DbHelper.getInstance(ctx);
+        Toast.makeText(ctx, "Missed Received", Toast.LENGTH_SHORT).show();
+        Log.i(TAG,"Missed Received: "+number);
+
+        //Get the current max call_id
+        int maxId = this.getMaxCallId();
+
+        //Insert the call into the CallTable
+        addCallToTable(ctx, number, maxId+1, start, null, INCOMING, MISSED);
+
+        //Check if the number has been logged yet
+        if(isNumberInDatabase(number)){
+            //Then the number has been logged before, just update most recent
+            updateMostRecentCall(ctx, number, start, maxId+1, MISSED);
+//            incrementMissedCount(ctx, number);
+        } else{
+            //Then the number has not been logged before, so add to table
+            addNumberToTable(ctx, number, maxId+1, MISSED);
+//            incrementMissedCount(ctx, number);
         }
     }
 
     @Override
     protected void onOutgoingCallStarted(Context ctx, String number, Date start){
-        number = removeLeadingOne(number);
-        dbHelper = DbHelper.getInstance(ctx);
         Toast.makeText(ctx, "Outgoing started Received", Toast.LENGTH_SHORT).show();
         Log.i(TAG,"Outgoing started Received: "+number);
 
@@ -90,46 +113,22 @@ public class CallReceiver extends PhoneCallReceiver {
         int maxId = this.getMaxCallId();
 
         //Insert the call into the CallTable
-        addCallToTable(ctx, number, maxId+1, start, end, "outgoing", null);
+        addCallToTable(ctx, number, maxId+1, start, end, OUTGOING, null);
 
         //Check if the number has been logged yet
         if(isNumberInDatabase(number)){
             //Then the number has been logged before, just update most recent
-            updateMostRecentCall(ctx, number, start, maxId+1);
-            incrementOutgoingCount(ctx, number);
+            updateMostRecentCall(ctx, number, start, maxId+1, OUTGOING);
+//            incrementOutgoingCount(ctx, number);
         } else{
             //Then the number has not been logged before, so add to table
-            addNumberToTable(ctx, number, maxId+1);
-            incrementOutgoingCount(ctx, number);
-        }
-    }
-
-    @Override
-    protected void onMissedCall(Context ctx, String number, Date start){
-        number = removeLeadingOne(number);
-        dbHelper = DbHelper.getInstance(ctx);
-        Toast.makeText(ctx, "Missed Received", Toast.LENGTH_SHORT).show();
-        Log.i(TAG,"Missed Received: "+number);
-
-        //Get the current max call_id
-        int maxId = this.getMaxCallId();
-
-        //Insert the call into the CallTable
-        addCallToTable(ctx, number, maxId+1, start, null, "incoming", "missed");
-
-        //Check if the number has been logged yet
-        if(isNumberInDatabase(number)){
-            //Then the number has been logged before, just update most recent
-            updateMostRecentCall(ctx, number, start, maxId+1);
-            incrementMissedCount(ctx, number);
-        } else{
-            //Then the number has not been logged before, so add to table
-            addNumberToTable(ctx, number, maxId+1);
-            incrementMissedCount(ctx, number);
+            addNumberToTable(ctx, number, maxId+1, OUTGOING);
+//            incrementOutgoingCount(ctx, number);
         }
     }
 
     private String removeLeadingOne(String number){
+        Log.i(TAG, "removeLeadingOne, num length: "+number.length() );
         //Is this safe? Would it interfere with non-local numbers? Maybe just out of country?
         if(number.length() == 11){
             return number.substring(1);
@@ -138,11 +137,25 @@ public class CallReceiver extends PhoneCallReceiver {
         }
     }
 
-    private void addNumberToTable(Context ctx, String number, long callId){
+    private void addNumberToTable(Context ctx, String number, long callId, String callType){
         long num = Long.parseLong(number);
+
+        String countColumn = "";
+        if(callType.equals(ANSWERED)){
+            countColumn = DataContract.NumbersTable.ANSWERED_COUNT;
+        } else if(callType.equals(MISSED)){
+            countColumn = DataContract.NumbersTable.MISSED_COUNT;
+        } else if(callType.equals(OUTGOING)){
+            countColumn = DataContract.NumbersTable.OUTGOING_COUNT;
+        } else{
+            //Should never happen, will cause crash
+            Log.e(TAG, "Invalid call type in updateMostRecentCall");
+        }
+
         ContentValues sqlValuesStatement = new ContentValues();
         sqlValuesStatement.put(DataContract.NumbersTable.NUMBER, num);
         sqlValuesStatement.put(DataContract.NumbersTable.MOST_RECENT, callId);
+        sqlValuesStatement.put(countColumn, 1);
         sqlValuesStatement.putNull(DataContract.NumbersTable.NOTES);
 
         dbHelper = DbHelper.getInstance(ctx);
@@ -155,12 +168,11 @@ public class CallReceiver extends PhoneCallReceiver {
     }
 
     private long addCallToTable(Context ctx, String number, int callId, Date start, Date end, String inOut, String ansMiss){
-
         long num = Long.parseLong(number);
         ContentValues sqlValuesStatement = new ContentValues();
         sqlValuesStatement.put(DataContract.CallTable.NUMBER, num);
         sqlValuesStatement.put(DataContract.CallTable.START_TIME, start.getTime());
-        if(end != null) { //Can, and likely will be, NULL
+        if(end != null) { //Will be null if the call was missed
             sqlValuesStatement.put(DataContract.CallTable.END_TIME, end.getTime());
         }
         sqlValuesStatement.put(DataContract.CallTable.INCOMING_OUTGOING, inOut);
@@ -180,7 +192,7 @@ public class CallReceiver extends PhoneCallReceiver {
 
 
 
-    private void updateMostRecentCall(Context ctx, String number, Date startDate, long callId){
+    private void updateMostRecentCall(Context ctx, String number, Date startDate, long callId, String callType ){
         long num = Long.parseLong(number);
         dbHelper = DbHelper.getInstance(ctx);
         database = dbHelper.getWritableDatabase();
@@ -193,8 +205,24 @@ public class CallReceiver extends PhoneCallReceiver {
 
         String whereClause = String.format("%s = %s" , DataContract.NumbersTable.NUMBER, num);
 
+        String countColumn = "";
+        if(callType.equals(ANSWERED)){
+            countColumn = DataContract.NumbersTable.ANSWERED_COUNT;
+        } else if(callType.equals(MISSED)){
+            countColumn = DataContract.NumbersTable.MISSED_COUNT;
+        } else if(callType.equals(OUTGOING)){
+            countColumn = DataContract.NumbersTable.OUTGOING_COUNT;
+        } else{
+            //Should never happen, will cause crash
+            Log.e(TAG, "Invalid call type in updateMostRecentCall");
+        }
+
         database.beginTransaction();
         database.update(DataContract.NumbersTable.TABLE_NAME, sqlValuesStatement, whereClause, null); //whereArgs
+        database.execSQL("UPDATE " + DataContract.NumbersTable.TABLE_NAME
+                + " SET " + countColumn + " = "
+                + countColumn + " + 1 "
+                + "WHERE "+ DataContract.NumbersTable.NUMBER + " = " + num );
         database.setTransactionSuccessful();
         database.endTransaction();
         database.close();
@@ -234,111 +262,111 @@ public class CallReceiver extends PhoneCallReceiver {
         return id;
     }
 
-    private void incrementOutgoingCount(Context ctx, String number){
-        int count = this.getOutgoingCount(ctx, number);
-        long num = Long.parseLong(number);
-        dbHelper = DbHelper.getInstance(ctx);
-        database = dbHelper.getWritableDatabase();
-
-        ContentValues sqlValuesStatement = new ContentValues();
-
-        //create insert statement
-        sqlValuesStatement.clear();
-        sqlValuesStatement.put(DataContract.NumbersTable.OUTGOING_COUNT, count);
-
-        String whereClause = String.format("%s = %s" , DataContract.NumbersTable.NUMBER, num);
-
-        database.beginTransaction();
-        database.update(DataContract.NumbersTable.TABLE_NAME, sqlValuesStatement, whereClause, null); //whereArgs
-        database.setTransactionSuccessful();
-        database.endTransaction();
-        database.close();
-    }
-
-    private int getOutgoingCount(Context ctx, String number){
-        dbHelper = DbHelper.getInstance(ctx);
-        database = dbHelper.getReadableDatabase();
-        String whereArgs = String.format("%s = %s", DataContract.NumbersTable.NUMBER, number);
-        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME,
-                new String[]{DataContract.NumbersTable.OUTGOING_COUNT}, whereArgs, null, null, null, null);
-
-        if(cursor.moveToFirst()){
-            return cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.OUTGOING_COUNT));
-        } else{
-            Log.i(TAG,"Couldn't find number!"); //Shouldn't happen
-            return -1;
-        }
-    }
-
-    private void incrementAnsweredCount(Context ctx, String number){
-        int count = this.getAnsweredCount(ctx, number);
-        long num = Long.parseLong(number);
-        dbHelper = DbHelper.getInstance(ctx);
-        database = dbHelper.getWritableDatabase();
-
-        ContentValues sqlValuesStatement = new ContentValues();
-
-        //create insert statement
-        sqlValuesStatement.clear();
-        sqlValuesStatement.put(DataContract.NumbersTable.ANSWERED_COUNT, count);
-
-        String whereClause = String.format("%s = %s" , DataContract.NumbersTable.NUMBER, num);
-
-        database.beginTransaction();
-        database.update(DataContract.NumbersTable.TABLE_NAME, sqlValuesStatement, whereClause, null); //whereArgs
-        database.setTransactionSuccessful();
-        database.endTransaction();
-        database.close();
-    }
-
-    private int getAnsweredCount(Context ctx, String number){
-        dbHelper = DbHelper.getInstance(ctx);
-        database = dbHelper.getReadableDatabase();
-        String whereArgs = String.format("%s = %s", DataContract.NumbersTable.NUMBER, number);
-        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME,
-                new String[]{DataContract.NumbersTable.ANSWERED_COUNT}, whereArgs, null, null, null, null);
-
-        if(cursor.moveToFirst()){
-            return cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.ANSWERED_COUNT));
-        } else{
-            Log.i(TAG,"Couldn't find number!"); //Shouldn't happen
-            return -1;
-        }
-    }
-
-    private void incrementMissedCount(Context ctx, String number){
-        int count = this.getMissedCount(ctx, number);
-        long num = Long.parseLong(number);
-        dbHelper = DbHelper.getInstance(ctx);
-        database = dbHelper.getWritableDatabase();
-
-        ContentValues sqlValuesStatement = new ContentValues();
-
-        //create insert statement
-        sqlValuesStatement.clear();
-        sqlValuesStatement.put(DataContract.NumbersTable.MISSED_COUNT, count);
-
-        String whereClause = String.format("%s = %s" , DataContract.NumbersTable.NUMBER, num);
-
-        database.beginTransaction();
-        database.update(DataContract.NumbersTable.TABLE_NAME, sqlValuesStatement, whereClause, null); //whereArgs
-        database.setTransactionSuccessful();
-        database.endTransaction();
-        database.close();
-    }
-
-    private int getMissedCount(Context ctx, String number){
-        dbHelper = DbHelper.getInstance(ctx);
-        database = dbHelper.getReadableDatabase();
-        String whereArgs = String.format("%s = %s", DataContract.NumbersTable.NUMBER, number);
-        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME,
-                new String[]{DataContract.NumbersTable.MISSED_COUNT}, whereArgs, null, null, null, null);
-
-        if(cursor.moveToFirst()){
-            return cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.MISSED_COUNT));
-        } else{
-            Log.i(TAG,"Couldn't find number!"); //Shouldn't happen
-            return -1;
-        }
-    }
+//    private void incrementOutgoingCount(Context ctx, String number){
+//        int count = this.getOutgoingCount(ctx, number);
+//        long num = Long.parseLong(number);
+//        dbHelper = DbHelper.getInstance(ctx);
+//        database = dbHelper.getWritableDatabase();
+//
+//        ContentValues sqlValuesStatement = new ContentValues();
+//
+//        //create insert statement
+//        sqlValuesStatement.clear();
+//        sqlValuesStatement.put(DataContract.NumbersTable.OUTGOING_COUNT, count);
+//
+//        String whereClause = String.format("%s = %s" , DataContract.NumbersTable.NUMBER, num);
+//
+//        database.beginTransaction();
+//        database.update(DataContract.NumbersTable.TABLE_NAME, sqlValuesStatement, whereClause, null); //whereArgs
+//        database.setTransactionSuccessful();
+//        database.endTransaction();
+//        database.close();
+//    }
+//
+//    private int getOutgoingCount(Context ctx, String number){
+//        dbHelper = DbHelper.getInstance(ctx);
+//        database = dbHelper.getReadableDatabase();
+//        String whereArgs = String.format("%s = %s", DataContract.NumbersTable.NUMBER, number);
+//        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME,
+//                new String[]{DataContract.NumbersTable.OUTGOING_COUNT}, whereArgs, null, null, null, null);
+//
+//        if(cursor.moveToFirst()){
+//            return cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.OUTGOING_COUNT));
+//        } else{
+//            Log.i(TAG,"Couldn't find number!"); //Shouldn't happen
+//            return -1;
+//        }
+//    }
+//
+//    private void incrementAnsweredCount(Context ctx, String number){
+//        int count = this.getAnsweredCount(ctx, number);
+//        long num = Long.parseLong(number);
+//        dbHelper = DbHelper.getInstance(ctx);
+//        database = dbHelper.getWritableDatabase();
+//
+//        ContentValues sqlValuesStatement = new ContentValues();
+//
+//        //create insert statement
+//        sqlValuesStatement.clear();
+//        sqlValuesStatement.put(DataContract.NumbersTable.ANSWERED_COUNT, count);
+//
+//        String whereClause = String.format("%s = %s" , DataContract.NumbersTable.NUMBER, num);
+//
+//        database.beginTransaction();
+//        database.update(DataContract.NumbersTable.TABLE_NAME, sqlValuesStatement, whereClause, null); //whereArgs
+//        database.setTransactionSuccessful();
+//        database.endTransaction();
+//        database.close();
+//    }
+//
+//    private int getAnsweredCount(Context ctx, String number){
+//        dbHelper = DbHelper.getInstance(ctx);
+//        database = dbHelper.getReadableDatabase();
+//        String whereArgs = String.format("%s = %s", DataContract.NumbersTable.NUMBER, number);
+//        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME,
+//                new String[]{DataContract.NumbersTable.ANSWERED_COUNT}, whereArgs, null, null, null, null);
+//
+//        if(cursor.moveToFirst()){
+//            return cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.ANSWERED_COUNT));
+//        } else{
+//            Log.i(TAG,"Couldn't find number!"); //Shouldn't happen
+//            return -1;
+//        }
+//    }
+//
+//    private void incrementMissedCount(Context ctx, String number){
+//        int count = this.getMissedCount(ctx, number);
+//        long num = Long.parseLong(number);
+//        dbHelper = DbHelper.getInstance(ctx);
+//        database = dbHelper.getWritableDatabase();
+//
+//        ContentValues sqlValuesStatement = new ContentValues();
+//
+//        //create insert statement
+//        sqlValuesStatement.clear();
+//        sqlValuesStatement.put(DataContract.NumbersTable.MISSED_COUNT, count);
+//
+//        String whereClause = String.format("%s = %s" , DataContract.NumbersTable.NUMBER, num);
+//
+//        database.beginTransaction();
+//        database.update(DataContract.NumbersTable.TABLE_NAME, sqlValuesStatement, whereClause, null); //whereArgs
+//        database.setTransactionSuccessful();
+//        database.endTransaction();
+//        database.close();
+//    }
+//
+//    private int getMissedCount(Context ctx, String number){
+//        dbHelper = DbHelper.getInstance(ctx);
+//        database = dbHelper.getReadableDatabase();
+//        String whereArgs = String.format("%s = %s", DataContract.NumbersTable.NUMBER, number);
+//        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME,
+//                new String[]{DataContract.NumbersTable.MISSED_COUNT}, whereArgs, null, null, null, null);
+//
+//        if(cursor.moveToFirst()){
+//            return cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.MISSED_COUNT));
+//        } else{
+//            Log.i(TAG,"Couldn't find number!"); //Shouldn't happen
+//            return -1;
+//        }
+//    }
 }

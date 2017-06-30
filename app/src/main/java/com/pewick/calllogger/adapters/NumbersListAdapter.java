@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,14 +66,16 @@ public class NumbersListAdapter extends ArrayAdapter<NumberItem> {
         Bitmap image = item.getContactImage();
         if(image != null){
             vh.icon.setImageBitmap(image);
+//            vh.icon.setColorFilter(ContextCompat.getColor(activity,R.color.transparent));
         } else {
             vh.icon.setImageResource(R.drawable.contact_phone_icon);
+//            vh.icon.setColorFilter(ContextCompat.getColor(activity,R.color.black_75_percent));
         }
 
         return cellView;
     }
 
-    static class NumberVH {
+    private static class NumberVH {
         TextView number;
         ImageView icon;
     }

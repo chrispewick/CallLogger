@@ -110,6 +110,7 @@ public class NumberDialogFragment extends DialogFragment {
 
         notes = (EditText) dialog.findViewById(R.id.notes_field);
         notes.setText(this.readNotesFormDatabase());
+        notes.setSelection(notes.getText().length());
     }
 
     private CallItem readMostRecentCallFromDatabase(){
