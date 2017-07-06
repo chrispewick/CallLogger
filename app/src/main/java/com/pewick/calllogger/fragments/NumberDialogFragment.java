@@ -18,8 +18,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.pewick.calllogger.R;
+import com.pewick.calllogger.activity.MainActivity;
 import com.pewick.calllogger.database.DataContract;
 import com.pewick.calllogger.database.DbHelper;
 import com.pewick.calllogger.models.CallItem;
@@ -34,6 +36,7 @@ public class NumberDialogFragment extends DialogFragment {
     private final String TAG = getClass().getSimpleName();
 
     private AlertDialog dialog;
+    private AlertDialog deleteAlertDialog;
 
     private NumberItem numberItem;
 
@@ -63,6 +66,7 @@ public class NumberDialogFragment extends DialogFragment {
         this.configureDialogTextContent();
         this.configureCallButton();
         this.configureDoneButton();
+        this.configureDeleteButton();
     }
 
     private void configureDialogTextContent(){
@@ -167,7 +171,62 @@ public class NumberDialogFragment extends DialogFragment {
         return notes;
     }
 
-    private void configureDoneButton(){
+    private void configureDeleteButton(){
+        ImageView deleteButton = (ImageView) dialog.findViewById(R.id.delete_button);
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showDeleteConfirmationDialog();
+            }
+        });
+    }
+
+    private void showDeleteConfirmationDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme);
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View alertDialogView = inflater.inflate(R.layout.delete_alert_dialog, null);
+        builder.setView(alertDialogView);
+
+        TextView deleteButton = (TextView) alertDialogView.findViewById(R.id.confirm_delete);
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(view.getContext(), "Number Deleted", Toast.LENGTH_SHORT).show();
+                //Delete the number, and its calls, from the database
+                deleteNumberFromDatabase(Long.toString(numberItem.getNumber()));
+                //Now refresh the lists
+                ((MainActivity)getActivity()).refreshLists();
+
+                deleteAlertDialog.dismiss();
+                dialog.dismiss();
+            }
+        });
+
+        TextView cancelButton = (TextView) alertDialogView.findViewById(R.id.cancel_delete);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                deleteAlertDialog.dismiss();
+            }
+        });
+
+
+        deleteAlertDialog = builder.create();
+        deleteAlertDialog.setCanceledOnTouchOutside(true);
+        deleteAlertDialog.show();
+    }
+
+    private void deleteNumberFromDatabase(String number){
+        DbHelper dbHelper = DbHelper.getInstance(getActivity());
+        SQLiteDatabase database = dbHelper.getWritableDatabase();
+        //First, delete all call entries in the CallTable
+        database.delete(DataContract.CallTable.TABLE_NAME, DataContract.CallTable.NUMBER + "=" + number, null);
+
+        //Then delete the number from the NumberTable
+        database.delete(DataContract.NumbersTable.TABLE_NAME, DataContract.NumbersTable.NUMBER + "=" + number, null);
+    }
+
+    private void configureDoneButton() {
         LinearLayout doneButton = (LinearLayout) dialog.findViewById(R.id.done_button);
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -176,7 +235,7 @@ public class NumberDialogFragment extends DialogFragment {
                 SQLiteDatabase database = dbHelper.getReadableDatabase();
                 ContentValues cv = new ContentValues();
                 cv.put(DataContract.NumbersTable.NOTES, notes.getText().toString());
-                database.update(DataContract.NumbersTable.TABLE_NAME, cv, DataContract.NumbersTable.NUMBER + "= ?", new String[] {Long.toString(numberItem.getNumber())});
+                database.update(DataContract.NumbersTable.TABLE_NAME, cv, DataContract.NumbersTable.NUMBER + "= ?", new String[]{Long.toString(numberItem.getNumber())});
 
                 database.close();
                 dbHelper.close();

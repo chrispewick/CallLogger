@@ -20,9 +20,13 @@ public class ListPagerAdapter extends FragmentPagerAdapter {
 
     private final String TAG = getClass().getSimpleName();
     private Fragment currentFragment;
+    private NumbersFragment numbersFragment;
+    private HistoryFragment historyFragment;
 
     public ListPagerAdapter(FragmentManager fm) {
         super(fm);
+        numbersFragment = new NumbersFragment();
+        historyFragment = new HistoryFragment();
     }
 
     @Override
@@ -35,9 +39,9 @@ public class ListPagerAdapter extends FragmentPagerAdapter {
 //        return Fragment.instantiate(, AFragment.class.getName(), null);
 
         if(position == 0){
-            return new NumbersFragment();
+            return numbersFragment;
         } else{
-            return new HistoryFragment();
+            return historyFragment;
         }
     }
 
@@ -51,5 +55,9 @@ public class ListPagerAdapter extends FragmentPagerAdapter {
             currentFragment = ((Fragment) object);
         }
         super.setPrimaryItem(container, position, object);
+    }
+
+    public void refreshLists(){
+
     }
 }

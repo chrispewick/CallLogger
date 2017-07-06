@@ -14,6 +14,14 @@
         <item name="android:inputType">text</item>
     </style>
 
+    <style name="AlertDialogTheme" parent="@android:style/Theme.Holo.Light.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowMinWidthMajor">@android:dimen/dialog_min_width_major</item>
+        <item name="android:windowMinWidthMinor">@android:dimen/dialog_min_width_minor</item>
+
+    </style>
+
     <style name="NewCustomDialog">
         <item name="android:windowFrame">@null</item>
         <!--<item name="android:windowBackground">@color/black_30_percent</item>-->

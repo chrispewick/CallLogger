@@ -3,6 +3,9 @@ package com.pewick.calllogger.activity;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
@@ -29,6 +32,7 @@ import com.pewick.calllogger.fragments.HistoryFragment;
 import com.pewick.calllogger.fragments.NumbersFragment;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * The base activity for the application. Contains the ViewPager holding the two main fragments.
@@ -50,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
     private PopupMenu numbersPopUp;
     private PopupMenu historyPopUp;
 
+    private HashMap<String,String> contactsNumberNamesMap;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
         this.setUpViewPager();
         this.setUpSearch();
         this.setUpOptionsMenu();
+        this.getAllContactNames();
     }
 
     private void setUpOptionsMenu(){
@@ -425,5 +432,57 @@ public class MainActivity extends AppCompatActivity {
                 numbersListButton.setTextColor(ResourcesCompat.getColor(getResources(), R.color.white_transparent, null));
             }
         });
+    }
+
+    public void refreshLists(){
+        ((NumbersFragment) ((ListPagerAdapter) pager.getAdapter()).getItem(0)).refreshList();
+        ((HistoryFragment) ((ListPagerAdapter) pager.getAdapter()).getItem(1)).refreshList();
+    }
+
+    private void getAllContactNames(){
+        contactsNumberNamesMap = new HashMap<>();
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                == PackageManager.PERMISSION_GRANTED) {
+
+            Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+            String[] projection = new String[]{ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                    ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER};
+
+            Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+
+            try {
+                int indexName = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+                int indexNumber = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER);
+
+                if (cursor.moveToFirst()) {
+                    do {
+                        String name = cursor.getString(indexName);
+                        String number = removeLeadingOne(cursor.getString(indexNumber));
+
+                        Log.i(TAG, "Contact name: "+name);
+                        Log.i(TAG, "Contact number: "+number);
+
+                        contactsNumberNamesMap.put(number, name);
+                    } while (cursor.moveToNext());
+                }
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+    }
+
+    private String removeLeadingOne(String number){
+        if(number != null){
+            return number.substring(2);
+        }
+        return null;
+    }
+
+    public String getContactName(String number){
+        return contactsNumberNamesMap.get(number);
     }
 }

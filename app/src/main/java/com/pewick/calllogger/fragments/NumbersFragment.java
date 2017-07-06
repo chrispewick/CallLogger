@@ -142,26 +142,6 @@ public class NumbersFragment extends Fragment {
         this.checkNumberOfResults();
     }
 
-    //Need to do this every time, in case the user changes a contact name
-    private String getContactName(Context context, String phoneNumber) {
-        String contactName = null;
-        if(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)
-                == PackageManager.PERMISSION_GRANTED){
-            ContentResolver cr = context.getContentResolver();
-            Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
-            Cursor cursor = cr.query(uri, new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME}, null, null, null);
-            if (cursor == null) {
-                return null;
-            }
-            if(cursor.moveToFirst()) {
-                contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME));
-            }
-            cursor.close();
-        }
-
-        return contactName;
-    }
-
     private static Bitmap retrieveContactPhoto(Context context, String number) {
         String contactId = null;
         Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
@@ -212,19 +192,19 @@ public class NumbersFragment extends Fragment {
         if(cursor.moveToFirst()){
             do{
                 long number = cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NUMBER));
-                String contact = getContactName(getContext(), Long.toString(number));
                 NumberItem existingNumber = new NumberItem(number,
                         cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.MOST_RECENT)),
-                        contact,
                         cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NOTES)),
                         cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.OUTGOING_COUNT)),
                         cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.ANSWERED_COUNT)),
                         cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.MISSED_COUNT)));
 
+                //Need to do this every time, in case the user changes a contact name
+                existingNumber.setContactName(((MainActivity)getActivity()).getContactName(String.valueOf(existingNumber.getNumber())));
+
                 if(existingNumber.getContactName() != null){
                     //then the number is in contacts
                     numberContactList.add(existingNumber);
-
                     //get the contact image
                     Bitmap bitmap = retrieveContactPhoto(getContext(), Long.toString(existingNumber.getNumber()));
                     if(bitmap != null){
@@ -237,6 +217,7 @@ public class NumbersFragment extends Fragment {
                 }
             } while (cursor.moveToNext());
         }
+        cursor.close();
 
         Collections.sort(numberNonContactList);
         Collections.sort(numberContactList);
@@ -246,8 +227,6 @@ public class NumbersFragment extends Fragment {
         numbersList.addAll(numberContactList);
         numbersListOriginal.addAll(numberNonContactList);
         numbersListOriginal.addAll(numberContactList);
-
-        cursor.close();
     }
 
     private void checkNumberOfResults(){
@@ -259,5 +238,12 @@ public class NumbersFragment extends Fragment {
             noResults.setVisibility(View.GONE);
             numbersListView.setVisibility(View.VISIBLE);
         }
+    }
+
+    public void refreshList(){
+        Log.i(TAG, "Refresh List");
+        readNumbersFromDatabase();
+        adapter = new NumbersListAdapter(getActivity(),numbersList);
+        numbersListView.setAdapter(adapter);
     }
 }

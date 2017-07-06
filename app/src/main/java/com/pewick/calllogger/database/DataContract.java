@@ -25,6 +25,8 @@ public class DataContract {
                     + NumbersTable.ANSWERED_COUNT + " INTEGER,"
                     + NumbersTable.MISSED_COUNT + " INTEGER)";
 
+    public static final String SQL_CREATE_NUMBER_INDEX_ON_CALLTABE = "CREATE INDEX ";
+
     public static final String SQL_DELETE_CALL_TABLE = "DROP TABLE IF EXISTS " + CallTable.TABLE_NAME;
     public static final String SQL_DELETE_NUMBERS_TABLE = "DROP TABLE IF EXISTS " + NumbersTable.TABLE_NAME;
 

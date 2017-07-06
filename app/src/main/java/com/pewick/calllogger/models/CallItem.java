@@ -80,12 +80,16 @@ public class CallItem implements Comparable<CallItem>, Parcelable {
 
     public String getFormattedNumber(){
         String temp = ""+this.number;
-        if(temp.length()==10) {
+        if(temp.length() == 10) {
             return String.format("(%s) %s-%s",
                     temp.substring(0, 3),
                     temp.substring(3, 6),
                     temp.substring(6, 10));
-        }else {
+        } else if(temp.length() == 7){
+            return String.format("%s-%s",
+                    temp.substring(0, 3),
+                    temp.substring(3));
+        } else{
             return temp;
         }
     }

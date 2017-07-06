@@ -31,6 +31,10 @@
     <string name="call">Call</string>
     <string name="close">Close</string>
     <string name="done">Done</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete_confirmation_tile">Delete Confirmation</string>
+    <string name="delete_confirmation_body">Are you sure you want to delete this number, and its history, from this application?</string>
 
     <!--For testing UI elements-->
     <string name="number_test">(515) 867–5309</string>

@@ -1,16 +1,20 @@
 package com.pewick.calllogger.fragments;
 
 import android.Manifest;
+import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.util.LongSparseArray;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -28,6 +32,7 @@ import com.pewick.calllogger.models.CallItem;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 
 /**
  * Fragment containing a list of all calls. From the MainActivity, the list can be searched, or
@@ -46,6 +51,8 @@ public class HistoryFragment extends Fragment {
     private ArrayList<CallItem> callListOriginal;
     private ArrayList<CallItem> contactsCallList;
     private ArrayList<CallItem> nonContactsCallList;
+
+    private HashMap<String,String> contactsNumberNamesMap;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -178,23 +185,28 @@ public class HistoryFragment extends Fragment {
 
     private String getContactName(Context context, String phoneNumber) {
         String contactName = null;
-        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS)
-                == PackageManager.PERMISSION_GRANTED){
-            ContentResolver cr = context.getContentResolver();
-            Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
-            Cursor cursor = cr.query(uri, new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME}, null, null, null);
-            if (cursor == null) {
-                return null;
-            }
-            if(cursor.moveToFirst()) {
-                contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME));
-            }
-            cursor.close();
+        ContentResolver cr = context.getContentResolver();
+        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+        Cursor cursor = cr.query(uri, new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME}, null, null, null);
+        if (cursor == null) {
+            return null;
         }
+        if(cursor.moveToFirst()) {
+            contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME));
+        }
+        cursor.close();
+
         return contactName;
     }
 
     private void readCallsFromDatabase(){
+
+//        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS)
+//                == PackageManager.PERMISSION_GRANTED) {
+////            addContactNames();
+//            getAllContactNames();
+//        }
+
         Log.i(TAG,"readCallsFromDatabase");
         Calendar startTime = Calendar.getInstance();
 
@@ -218,11 +230,15 @@ public class HistoryFragment extends Fragment {
 
         //fetch the data from the database as specified
         Cursor cursor = database.query(DataContract.CallTable.TABLE_NAME, projection, null, null, null, null, sortOrder);
-//        Cursor cursor = database.rawQuery("select * from "+DataContract.CallTable.TABLE_NAME, null);
+//        int callIdIndex = cursor.getColumnIndexOrThrow(DataContract.CallTable.CALL_ID);
+//        int numberIndex = cursor.getColumnIndexOrThrow(DataContract.CallTable.NUMBER);
+//        int startTimeIndex = cursor.getColumnIndexOrThrow(DataContract.CallTable.START_TIME);
+//        int endTimeIndex = cursor.getColumnIndexOrThrow(DataContract.CallTable.END_TIME);
+//        int inOutIndex = cursor.getColumnIndexOrThrow(DataContract.CallTable.INCOMING_OUTGOING);
+//        int ansMissIndex = cursor.getColumnIndexOrThrow(DataContract.CallTable.ANSWERED_MISSED);
+
         if(cursor.moveToFirst()){
             do{
-                //public CallItem(int id, long num, long start, long end, String inOut, String ansMiss){
-
                 CallItem existingCall = new CallItem(cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.CallTable.CALL_ID)),
                         cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.CallTable.NUMBER)),
                         cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.CallTable.START_TIME)),
@@ -230,7 +246,8 @@ public class HistoryFragment extends Fragment {
                         cursor.getString(cursor.getColumnIndexOrThrow(DataContract.CallTable.INCOMING_OUTGOING)),
                         cursor.getString(cursor.getColumnIndexOrThrow(DataContract.CallTable.ANSWERED_MISSED)));
 
-                existingCall.setContactName(getContactName(getActivity(), Long.toString(existingCall.getNumber())));
+                //Need to do this every time, in case the user changes a contact name
+                existingCall.setContactName(((MainActivity)getActivity()).getContactName(String.valueOf(existingCall.getNumber())));
 
                 if(existingCall.getContactName() != null){
                     //Then this call was from a contact
@@ -249,11 +266,80 @@ public class HistoryFragment extends Fragment {
         Log.i(TAG, "Time: "+ (endTime.getTimeInMillis() - startTime.getTimeInMillis()));
 //        Log.i(TAG, "callList size: "+callList.size());
 //        Log.i(TAG, "contacts size: "+contactsCallList.size());
-//        Log.i(TAG, "non-contacts size: "+ nonContactsCallList.size());
+//        Log.i(TAG, "non-contacts size: "+ nonContactsCallList.size())
+    }
+
+    private void getAllContactNames(){
+        contactsNumberNamesMap = new HashMap<>();
+
+        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+        String[] projection    = new String[] {ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER};
+
+        Cursor cursor = getContext().getContentResolver().query(uri, projection, null, null, null);
+
+        try {
+//            int indexName = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+//            int indexNumber = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+            int indexName = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+            int indexNumber = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    String name = cursor.getString(indexName);
+                    String number = cursor.getString(indexNumber);
+                    Log.i(TAG, "Contact name: "+name);
+                    Log.i(TAG, "Contact number: "+number);
+//                    contactsNumberNamesMap.put(Long.parseLong(number), name);
+                    contactsNumberNamesMap.put(number, name);
+                } while (cursor.moveToNext());
+            }
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        } finally {
+            if(cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    private void addContactNames(){
+        //It may be better to just get all contact names and put them in a hashmap with phone number keys
+        String contactName = null;
+        ContentResolver cr = getContext().getContentResolver();
+        ContentProviderClient contentProviderClient
+                = cr.acquireContentProviderClient(ContactsContract.PhoneLookup.CONTENT_FILTER_URI);
+        for(CallItem call : callList){
+            contactName = null;
+//            call.setContactName(getContactName(getActivity(), Long.toString(call.getNumber())));
+//            Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(Long.toString(call.getNumber())));
+//            Cursor cursor = cr.query(uri, new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME}, null, null, null);
+            try {
+                Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(Long.toString(call.getNumber())));
+                Cursor cursor = contentProviderClient.query(uri, new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME}, null, null, null);
+                if (cursor != null && cursor.moveToFirst()) {
+                    contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME));
+                }
+                if (cursor != null) {
+                    cursor.close();
+                }
+
+            } catch (RemoteException | NullPointerException e){
+                e.printStackTrace();
+            }
+
+            call.setContactName(contactName);
+            callListOriginal.add(call);
+        }
+
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.N){
+            contentProviderClient.release();
+        }else {
+            contentProviderClient.close();
+        }
     }
 
     private void checkNumberOfResults(){
-        Log.i(TAG, "checkNumberOfResults, empty? "+(callList.size() == 0));
         if(callList.size() == 0){
             noResults.setVisibility(View.VISIBLE);
             callListView.setVisibility(View.GONE);
@@ -269,5 +355,12 @@ public class HistoryFragment extends Fragment {
     private void showNumberOfResults(){
         String numResults = callList.size() +" "+ getResources().getString(R.string.results);
         numberResults.setText(numResults);
+    }
+
+    public void refreshList(){
+        readCallsFromDatabase();
+        adapter = new HistoryListAdapter(getActivity(), callList);
+        callListView.setAdapter(adapter);
+        this.checkNumberOfResults();
     }
 }

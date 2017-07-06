@@ -30,7 +30,7 @@ public class CallReceiver extends PhoneCallReceiver {
 
     @Override
     protected void onIncomingCallReceived(Context ctx, String number, Date start){
-        Toast.makeText(ctx, "Incoming Received", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(ctx, "Incoming Received", Toast.LENGTH_SHORT).show();
         Log.i(TAG,"Incoming Received: "+number);
 
         //Don't need to add the call to the tables until call has ended (or was missed)
@@ -38,7 +38,7 @@ public class CallReceiver extends PhoneCallReceiver {
 
     @Override
     protected void onIncomingCallAnswered(Context ctx, String number, Date start){
-        Toast.makeText(ctx, "Incoming answered Received", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(ctx, "Incoming answered Received", Toast.LENGTH_SHORT).show();
         Log.i(TAG,"Incoming answered Received: "+number);
 
         //Don't need to add the call to the tables until call has ended
@@ -48,7 +48,7 @@ public class CallReceiver extends PhoneCallReceiver {
     protected void onIncomingCallEnded(Context ctx, String number, Date start, Date end){
         number = removeLeadingOne(number);
         dbHelper = DbHelper.getInstance(ctx);
-        Toast.makeText(ctx, "Incoming ended Received", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(ctx, "Incoming ended Received", Toast.LENGTH_SHORT).show();
         Log.i(TAG,"Incoming ended Received: "+number);
 
         //Get the current max call_id
@@ -73,7 +73,7 @@ public class CallReceiver extends PhoneCallReceiver {
     protected void onMissedCall(Context ctx, String number, Date start){
         number = removeLeadingOne(number);
         dbHelper = DbHelper.getInstance(ctx);
-        Toast.makeText(ctx, "Missed Received", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(ctx, "Missed Received", Toast.LENGTH_SHORT).show();
         Log.i(TAG,"Missed Received: "+number);
 
         //Get the current max call_id
@@ -96,7 +96,7 @@ public class CallReceiver extends PhoneCallReceiver {
 
     @Override
     protected void onOutgoingCallStarted(Context ctx, String number, Date start){
-        Toast.makeText(ctx, "Outgoing started Received", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(ctx, "Outgoing started Received", Toast.LENGTH_SHORT).show();
         Log.i(TAG,"Outgoing started Received: "+number);
 
         //Don't need to add the call to the tables until call has ended
@@ -130,8 +130,10 @@ public class CallReceiver extends PhoneCallReceiver {
     private String removeLeadingOne(String number){
         Log.i(TAG, "removeLeadingOne, num length: "+number.length() );
         //Is this safe? Would it interfere with non-local numbers? Maybe just out of country?
-        if(number.length() == 11){
+        if(number.length() == 11){//Then there is a "1" to remove
             return number.substring(1);
+        } else if(number.length() == 12){//Then there is a "+1" to remove
+            return number.substring(2);
         } else{
             return number;
         }

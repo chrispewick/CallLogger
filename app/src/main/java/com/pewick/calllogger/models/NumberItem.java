@@ -34,10 +34,9 @@ public class NumberItem implements Comparable<NumberItem>, Parcelable {
 
     private Bitmap contactImage;
 
-    public NumberItem(long num, int recent, String contact, String notes, int outgoing, int answered, int missed){
+    public NumberItem(long num, int recent, String notes, int outgoing, int answered, int missed){
         this.number = num;
         this.mostRecentCallId = recent;
-        this.contactName = contact;
         this.notes = notes;
         this.outgoingCount = outgoing;
         this.answeredCount = answered;
@@ -60,17 +59,20 @@ public class NumberItem implements Comparable<NumberItem>, Parcelable {
         }
     }
 
-    public String getFormattedNumber(){
-        String temp = ""+this.number;
+    public String getFormattedNumber() {
+        String temp = "" + this.number;
         if(temp.length() == 10) {
             return String.format("(%s) %s-%s",
                     temp.substring(0, 3),
                     temp.substring(3, 6),
                     temp.substring(6, 10));
+        } else if(temp.length() == 7){
+            return String.format("%s-%s",
+                    temp.substring(0, 3),
+                    temp.substring(3));
         } else{
             return temp;
         }
-
     }
 
     public Bitmap getContactImage() {
@@ -79,6 +81,10 @@ public class NumberItem implements Comparable<NumberItem>, Parcelable {
 
     public void setContactImage(Bitmap contactImage) {
         this.contactImage = contactImage;
+    }
+
+    public void setContactName(String name){
+        this.contactName = name;
     }
 
     public Uri getPhotoUri(Context context, long number) {
