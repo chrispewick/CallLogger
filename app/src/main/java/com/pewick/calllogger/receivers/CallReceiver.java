@@ -61,11 +61,9 @@ public class CallReceiver extends PhoneCallReceiver {
         if(isNumberInDatabase(number)){
             //Then the number has been logged before, just update most recent
             updateMostRecentCall(ctx, number, start, maxId+1, ANSWERED);
-//            incrementAnsweredCount(ctx, number);
         } else{
             //Then the number has not been logged before, so add to table
             addNumberToTable(ctx, number, maxId+1, ANSWERED);
-//            incrementAnsweredCount(ctx, number);
         }
     }
 
@@ -86,11 +84,9 @@ public class CallReceiver extends PhoneCallReceiver {
         if(isNumberInDatabase(number)){
             //Then the number has been logged before, just update most recent
             updateMostRecentCall(ctx, number, start, maxId+1, MISSED);
-//            incrementMissedCount(ctx, number);
         } else{
             //Then the number has not been logged before, so add to table
             addNumberToTable(ctx, number, maxId+1, MISSED);
-//            incrementMissedCount(ctx, number);
         }
     }
 
@@ -119,11 +115,9 @@ public class CallReceiver extends PhoneCallReceiver {
         if(isNumberInDatabase(number)){
             //Then the number has been logged before, just update most recent
             updateMostRecentCall(ctx, number, start, maxId+1, OUTGOING);
-//            incrementOutgoingCount(ctx, number);
         } else{
             //Then the number has not been logged before, so add to table
             addNumberToTable(ctx, number, maxId+1, OUTGOING);
-//            incrementOutgoingCount(ctx, number);
         }
     }
 
@@ -263,112 +257,4 @@ public class CallReceiver extends PhoneCallReceiver {
         Log.i("Receiver","MaxId: "+id);
         return id;
     }
-
-//    private void incrementOutgoingCount(Context ctx, String number){
-//        int count = this.getOutgoingCount(ctx, number);
-//        long num = Long.parseLong(number);
-//        dbHelper = DbHelper.getInstance(ctx);
-//        database = dbHelper.getWritableDatabase();
-//
-//        ContentValues sqlValuesStatement = new ContentValues();
-//
-//        //create insert statement
-//        sqlValuesStatement.clear();
-//        sqlValuesStatement.put(DataContract.NumbersTable.OUTGOING_COUNT, count);
-//
-//        String whereClause = String.format("%s = %s" , DataContract.NumbersTable.NUMBER, num);
-//
-//        database.beginTransaction();
-//        database.update(DataContract.NumbersTable.TABLE_NAME, sqlValuesStatement, whereClause, null); //whereArgs
-//        database.setTransactionSuccessful();
-//        database.endTransaction();
-//        database.close();
-//    }
-//
-//    private int getOutgoingCount(Context ctx, String number){
-//        dbHelper = DbHelper.getInstance(ctx);
-//        database = dbHelper.getReadableDatabase();
-//        String whereArgs = String.format("%s = %s", DataContract.NumbersTable.NUMBER, number);
-//        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME,
-//                new String[]{DataContract.NumbersTable.OUTGOING_COUNT}, whereArgs, null, null, null, null);
-//
-//        if(cursor.moveToFirst()){
-//            return cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.OUTGOING_COUNT));
-//        } else{
-//            Log.i(TAG,"Couldn't find number!"); //Shouldn't happen
-//            return -1;
-//        }
-//    }
-//
-//    private void incrementAnsweredCount(Context ctx, String number){
-//        int count = this.getAnsweredCount(ctx, number);
-//        long num = Long.parseLong(number);
-//        dbHelper = DbHelper.getInstance(ctx);
-//        database = dbHelper.getWritableDatabase();
-//
-//        ContentValues sqlValuesStatement = new ContentValues();
-//
-//        //create insert statement
-//        sqlValuesStatement.clear();
-//        sqlValuesStatement.put(DataContract.NumbersTable.ANSWERED_COUNT, count);
-//
-//        String whereClause = String.format("%s = %s" , DataContract.NumbersTable.NUMBER, num);
-//
-//        database.beginTransaction();
-//        database.update(DataContract.NumbersTable.TABLE_NAME, sqlValuesStatement, whereClause, null); //whereArgs
-//        database.setTransactionSuccessful();
-//        database.endTransaction();
-//        database.close();
-//    }
-//
-//    private int getAnsweredCount(Context ctx, String number){
-//        dbHelper = DbHelper.getInstance(ctx);
-//        database = dbHelper.getReadableDatabase();
-//        String whereArgs = String.format("%s = %s", DataContract.NumbersTable.NUMBER, number);
-//        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME,
-//                new String[]{DataContract.NumbersTable.ANSWERED_COUNT}, whereArgs, null, null, null, null);
-//
-//        if(cursor.moveToFirst()){
-//            return cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.ANSWERED_COUNT));
-//        } else{
-//            Log.i(TAG,"Couldn't find number!"); //Shouldn't happen
-//            return -1;
-//        }
-//    }
-//
-//    private void incrementMissedCount(Context ctx, String number){
-//        int count = this.getMissedCount(ctx, number);
-//        long num = Long.parseLong(number);
-//        dbHelper = DbHelper.getInstance(ctx);
-//        database = dbHelper.getWritableDatabase();
-//
-//        ContentValues sqlValuesStatement = new ContentValues();
-//
-//        //create insert statement
-//        sqlValuesStatement.clear();
-//        sqlValuesStatement.put(DataContract.NumbersTable.MISSED_COUNT, count);
-//
-//        String whereClause = String.format("%s = %s" , DataContract.NumbersTable.NUMBER, num);
-//
-//        database.beginTransaction();
-//        database.update(DataContract.NumbersTable.TABLE_NAME, sqlValuesStatement, whereClause, null); //whereArgs
-//        database.setTransactionSuccessful();
-//        database.endTransaction();
-//        database.close();
-//    }
-//
-//    private int getMissedCount(Context ctx, String number){
-//        dbHelper = DbHelper.getInstance(ctx);
-//        database = dbHelper.getReadableDatabase();
-//        String whereArgs = String.format("%s = %s", DataContract.NumbersTable.NUMBER, number);
-//        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME,
-//                new String[]{DataContract.NumbersTable.MISSED_COUNT}, whereArgs, null, null, null, null);
-//
-//        if(cursor.moveToFirst()){
-//            return cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.MISSED_COUNT));
-//        } else{
-//            Log.i(TAG,"Couldn't find number!"); //Shouldn't happen
-//            return -1;
-//        }
-//    }
 }

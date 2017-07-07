@@ -9,7 +9,6 @@ import java.util.Calendar;
  * Defines the model for a call event.
  */
 public class CallItem implements Comparable<CallItem>, Parcelable {
-
     private final String TAG = getClass().getSimpleName();
 
     private int callId;

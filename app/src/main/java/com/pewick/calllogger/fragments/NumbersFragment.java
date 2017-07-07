@@ -41,7 +41,6 @@ import java.util.Collections;
  * From the MainActivity, the list can be searched, or filtered by contacts and non-contacts.
  */
 public class NumbersFragment extends Fragment {
-
     private final String TAG = getClass().getSimpleName();
 
     private TextView noResults;
@@ -208,7 +207,6 @@ public class NumbersFragment extends Fragment {
                     //get the contact image
                     Bitmap bitmap = retrieveContactPhoto(getContext(), Long.toString(existingNumber.getNumber()));
                     if(bitmap != null){
-//                        Log.i(TAG, "Bitmap NOT null");
                         existingNumber.setContactImage(bitmap);
                     }
                 } else{
