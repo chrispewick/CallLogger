@@ -17,7 +17,6 @@ import java.util.Map;
  * HistoryFragment within the main activity.
  */
 public class ListPagerAdapter extends FragmentPagerAdapter {
-
     private final String TAG = getClass().getSimpleName();
     private Fragment currentFragment;
     private NumbersFragment numbersFragment;
@@ -36,8 +35,6 @@ public class ListPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-//        return Fragment.instantiate(, AFragment.class.getName(), null);
-
         if(position == 0){
             return numbersFragment;
         } else{
@@ -55,9 +52,5 @@ public class ListPagerAdapter extends FragmentPagerAdapter {
             currentFragment = ((Fragment) object);
         }
         super.setPrimaryItem(container, position, object);
-    }
-
-    public void refreshLists(){
-
     }
 }

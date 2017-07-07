@@ -40,7 +40,6 @@ import java.util.HashMap;
  * between the NumbersFragment and the HistoryFragment.
  */
 public class MainActivity extends AppCompatActivity {
-
     private final String TAG = getClass().getSimpleName();
 
     private ViewPager pager;

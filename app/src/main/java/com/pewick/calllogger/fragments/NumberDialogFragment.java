@@ -45,7 +45,8 @@ public class NumberDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.NewCustomDialog);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),
+                R.style.NewCustomDialog);
         final LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.fragment_number_dialog, null);
 
@@ -61,7 +62,8 @@ public class NumberDialogFragment extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
 
         this.configureDialogTextContent();
         this.configureCallButton();
@@ -74,7 +76,6 @@ public class NumberDialogFragment extends DialogFragment {
         if(numberItem.getContactName() != null){
             titleContact.setText(numberItem.getContactName());
         } else {
-            //This causes a crash, b/c the view is null during onCreate
             titleContact.setVisibility(View.GONE);
         }
 
@@ -107,8 +108,13 @@ public class NumberDialogFragment extends DialogFragment {
 
         TextView incomingTotal = (TextView) dialog.findViewById(R.id.total_incoming);
         TextView outgoingTotal = (TextView) dialog.findViewById(R.id.total_outgoing);
-        String incomingTotalStr = getResources().getString(R.string.total_in) + " " + (numberItem.getAnsweredCount() + numberItem.getMissedCount());
-        String outgoingTotalStr = getResources().getString(R.string.total_out) + " " + numberItem.getOutgoingCount();
+        String incomingTotalStr = getResources().getString(R.string.total_in)
+                + " "
+                + (numberItem.getAnsweredCount()
+                + numberItem.getMissedCount());
+        String outgoingTotalStr = getResources().getString(R.string.total_out)
+                + " "
+                + numberItem.getOutgoingCount();
         incomingTotal.setText(incomingTotalStr);
         outgoingTotal.setText(outgoingTotalStr);
 
@@ -129,8 +135,13 @@ public class NumberDialogFragment extends DialogFragment {
                 DataContract.CallTable.ANSWERED_MISSED
         };
 
-        String whereArgs = String.format("%s = %s", DataContract.CallTable.CALL_ID, numberItem.getMostRecentCallId());
-        Cursor cursor = database.query(DataContract.CallTable.TABLE_NAME, projection, whereArgs, null, null, null, null);
+        String whereArgs = String.format("%s = %s",
+                DataContract.CallTable.CALL_ID,
+                numberItem.getMostRecentCallId());
+        Cursor cursor = database.query(DataContract.CallTable.TABLE_NAME,
+                projection,
+                whereArgs,
+                null, null, null, null);
 
         CallItem callItem = null;
         if(cursor.moveToFirst()){
@@ -162,8 +173,13 @@ public class NumberDialogFragment extends DialogFragment {
                 DataContract.NumbersTable.NOTES
         };
 
-        String whereArgs = String.format("%s = %s", DataContract.NumbersTable.NUMBER, numberItem.getNumber());
-        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME, projection, whereArgs, null, null, null, null);
+        String whereArgs = String.format("%s = %s",
+                DataContract.NumbersTable.NUMBER,
+                numberItem.getNumber());
+        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME,
+                projection,
+                whereArgs,
+                null, null, null, null);
         if(cursor.moveToFirst()){
             notes = cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NOTES));
         }
@@ -182,7 +198,8 @@ public class NumberDialogFragment extends DialogFragment {
     }
 
     private void showDeleteConfirmationDialog(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),
+                R.style.AlertDialogTheme);
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View alertDialogView = inflater.inflate(R.layout.delete_alert_dialog, null);
         builder.setView(alertDialogView);
@@ -210,7 +227,6 @@ public class NumberDialogFragment extends DialogFragment {
             }
         });
 
-
         deleteAlertDialog = builder.create();
         deleteAlertDialog.setCanceledOnTouchOutside(true);
         deleteAlertDialog.show();
@@ -220,10 +236,14 @@ public class NumberDialogFragment extends DialogFragment {
         DbHelper dbHelper = DbHelper.getInstance(getActivity());
         SQLiteDatabase database = dbHelper.getWritableDatabase();
         //First, delete all call entries in the CallTable
-        database.delete(DataContract.CallTable.TABLE_NAME, DataContract.CallTable.NUMBER + "=" + number, null);
+        database.delete(DataContract.CallTable.TABLE_NAME,
+                DataContract.CallTable.NUMBER + "=" + number,
+                null);
 
         //Then delete the number from the NumberTable
-        database.delete(DataContract.NumbersTable.TABLE_NAME, DataContract.NumbersTable.NUMBER + "=" + number, null);
+        database.delete(DataContract.NumbersTable.TABLE_NAME,
+                DataContract.NumbersTable.NUMBER + "=" + number,
+                null);
     }
 
     private void configureDoneButton() {
@@ -235,14 +255,15 @@ public class NumberDialogFragment extends DialogFragment {
                 SQLiteDatabase database = dbHelper.getReadableDatabase();
                 ContentValues cv = new ContentValues();
                 cv.put(DataContract.NumbersTable.NOTES, notes.getText().toString());
-                database.update(DataContract.NumbersTable.TABLE_NAME, cv, DataContract.NumbersTable.NUMBER + "= ?", new String[]{Long.toString(numberItem.getNumber())});
-
+                database.update(DataContract.NumbersTable.TABLE_NAME,
+                        cv,
+                        DataContract.NumbersTable.NUMBER + "= ?",
+                        new String[]{Long.toString(numberItem.getNumber())});
                 database.close();
                 dbHelper.close();
                 dialog.dismiss();
             }
         });
-
     }
 
     private void configureCallButton(){

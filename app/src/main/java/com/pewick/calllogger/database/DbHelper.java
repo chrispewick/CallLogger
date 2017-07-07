@@ -85,14 +85,14 @@ public class DbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.i(TAG, "onUpgrade");
-
         // Write logic to preserve the data currently in the user's database, then implement the
         // changes to the database tables, finally, copy the original data back into the new tables.
 
-
         if(oldVersion < 4) {
-            this.readNumbersFromDatabaseVersion3(db);
-            this.readCallsFromDatabase(db);
+            //From this version on, I maintained a count of all calls for each number.
+            // Earlier versions did not have this feature, so I need to save that earlier data,
+            // then calculate the counts, then store it all back in the database.
+
             //Retrieve all data from the tables in the existing database
             this.readNumbersFromDatabaseVersion3(db);
             this.readCallsFromDatabase(db);
@@ -100,7 +100,7 @@ public class DbHelper extends SQLiteOpenHelper {
             //Delete the old tables
             db.execSQL(DataContract.SQL_DELETE_CALL_TABLE);
             db.execSQL(DataContract.SQL_DELETE_NUMBERS_TABLE);
-            //Ceates the new tables
+            //Create the new tables
             db.execSQL(DataContract.SQL_CREATE_CALL_TABLE);
             db.execSQL(DataContract.SQL_CREATE_NUMBERS_TABLE);
 
@@ -141,7 +141,6 @@ public class DbHelper extends SQLiteOpenHelper {
     private void readNumbersFromDatabase(SQLiteDatabase database){
         numbersList = new ArrayList<>();
 
-//        DbHelper dbHelper = DbHelper.getInstance();
         String[] projection = {
                 DataContract.NumbersTable.NUMBER,
                 DataContract.NumbersTable.MOST_RECENT,
@@ -149,15 +148,13 @@ public class DbHelper extends SQLiteOpenHelper {
                 DataContract.NumbersTable.OUTGOING_COUNT,
                 DataContract.NumbersTable.ANSWERED_COUNT,
                 DataContract.NumbersTable.MISSED_COUNT
-
         };
-
-        //specify read order based on number
-//        String sortOrder = DataContract.NumbersTable.NUMBER + " ASC";
 
         //fetch the data from the database as specified
         database.beginTransaction();
-        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME, projection, null, null, null, null, null);
+        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME,
+                projection,
+                null, null, null, null, null);
         database.setTransactionSuccessful();
         database.endTransaction();
         if(cursor.moveToFirst()){
@@ -172,13 +169,47 @@ public class DbHelper extends SQLiteOpenHelper {
                         contact,
                         cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NOTES)));
 
-                //cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.CONTACT_NAME))
-
                 numbersList.add(existingNumber);
-//                numbersListOriginal.add(existingNumber);
             } while (cursor.moveToNext());
         }
+        cursor.close();
+    }
 
+    /**
+     * This is an old version. In this version, there were no count fields stored in the table.
+     * Used to upgrade installed apps to version 4's new database schema.
+     * @param database
+     */
+    private void readNumbersFromDatabaseVersion3(SQLiteDatabase database){
+        numbersList = new ArrayList<>();
+        String[] projection = {
+                DataContract.NumbersTable.NUMBER,
+                DataContract.NumbersTable.MOST_RECENT,
+                DataContract.NumbersTable.NOTES
+        };
+
+        //fetch the data from the database as specified
+        database.beginTransaction();
+        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME,
+                projection,
+                null, null, null, null, null);
+        database.setTransactionSuccessful();
+        database.endTransaction();
+        if(cursor.moveToFirst()){
+            do{
+                long number = cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NUMBER));
+//                Log.i(TAG, "Number: "+number);
+
+                String contact = getContactName(context, Long.toString(number));
+
+                NumberItem existingNumber = new NumberItem(number,
+                        cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.MOST_RECENT)),
+                        contact,
+                        cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NOTES)));
+
+                numbersList.add(existingNumber);
+            } while (cursor.moveToNext());
+        }
         cursor.close();
     }
 
@@ -197,13 +228,11 @@ public class DbHelper extends SQLiteOpenHelper {
             }
             cursor.close();
         }
-
         return contactName;
     }
 
     private void readCallsFromDatabase(SQLiteDatabase database){
         Log.i(TAG,"readCallsFromDatabase");
-        Calendar startTime = Calendar.getInstance();
         callsList = new ArrayList<>();
         String[] projection = {
                 DataContract.CallTable.CALL_ID,
@@ -218,14 +247,9 @@ public class DbHelper extends SQLiteOpenHelper {
         String sortOrder = DataContract.CallTable.START_TIME + " DESC";
 
         //fetch the data from the database as specified
-//        database.beginTransaction();
         Cursor cursor = database.query(DataContract.CallTable.TABLE_NAME, projection, null, null, null, null, sortOrder);
-//        database.setTransactionSuccessful();
-//        database.endTransaction();
         if(cursor.moveToFirst()){
             do{
-                //public CallItem(int id, long num, long start, long end, String inOut, String ansMiss){
-
                 CallItem existingCall = new CallItem(cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.CallTable.CALL_ID)),
                         cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.CallTable.NUMBER)),
                         cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.CallTable.START_TIME)),
@@ -237,14 +261,11 @@ public class DbHelper extends SQLiteOpenHelper {
                 callsList.add(existingCall);
             } while (cursor.moveToNext());
         }
-//        database.setTransactionSuccessful();
-//        database.endTransaction();
         cursor.close();
 
     }
 
     private void addNumberToTable(SQLiteDatabase database, NumberItem numberItem){
-
         ContentValues sqlValuesStatement = new ContentValues();
         sqlValuesStatement.put(DataContract.NumbersTable.NUMBER, numberItem.getNumber());
         sqlValuesStatement.put(DataContract.NumbersTable.MOST_RECENT, numberItem.getMostRecentCallId());
@@ -260,7 +281,6 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     private long addCallToTable(SQLiteDatabase database, CallItem callItem){
-
         ContentValues sqlValuesStatement = new ContentValues();
         sqlValuesStatement.put(DataContract.CallTable.NUMBER, callItem.getNumber());
         sqlValuesStatement.put(DataContract.CallTable.START_TIME, callItem.getStartTime());
@@ -276,47 +296,5 @@ public class DbHelper extends SQLiteOpenHelper {
         database.endTransaction();
 
         return rowID;
-    }
-
-
-
-    private void readNumbersFromDatabaseVersion3(SQLiteDatabase database){
-        numbersList = new ArrayList<>();
-
-//        DbHelper dbHelper = DbHelper.getInstance();
-        String[] projection = {
-                DataContract.NumbersTable.NUMBER,
-                DataContract.NumbersTable.MOST_RECENT,
-                DataContract.NumbersTable.NOTES
-        };
-
-        //specify read order based on number
-//        String sortOrder = DataContract.NumbersTable.NUMBER + " ASC";
-
-        //fetch the data from the database as specified
-        database.beginTransaction();
-        Cursor cursor = database.query(DataContract.NumbersTable.TABLE_NAME, projection, null, null, null, null, null);
-        database.setTransactionSuccessful();
-        database.endTransaction();
-        if(cursor.moveToFirst()){
-            do{
-                long number = cursor.getLong(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NUMBER));
-//                Log.i(TAG, "Number: "+number);
-
-                String contact = getContactName(context, Long.toString(number));
-
-                NumberItem existingNumber = new NumberItem(number,
-                        cursor.getInt(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.MOST_RECENT)),
-                        contact,
-                        cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.NOTES)));
-
-                //cursor.getString(cursor.getColumnIndexOrThrow(DataContract.NumbersTable.CONTACT_NAME))
-
-                numbersList.add(existingNumber);
-//                numbersListOriginal.add(existingNumber);
-            } while (cursor.moveToNext());
-        }
-
-        cursor.close();
     }
 }

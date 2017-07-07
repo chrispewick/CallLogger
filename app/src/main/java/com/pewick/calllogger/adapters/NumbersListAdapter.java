@@ -25,7 +25,6 @@ import java.util.ArrayList;
  * Custom ArrayAdapter for the phone numbers and contacts list found in the NumbersFragment.
  */
 public class NumbersListAdapter extends ArrayAdapter<NumberItem> {
-
     private final String TAG = getClass().getSimpleName();
 
     private Activity activity;
