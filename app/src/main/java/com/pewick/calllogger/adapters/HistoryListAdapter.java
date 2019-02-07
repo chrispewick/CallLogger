@@ -1,7 +1,7 @@
 package com.pewick.calllogger.adapters;
 
 import android.app.Activity;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +11,6 @@ import android.widget.TextView;
 
 import com.pewick.calllogger.R;
 import com.pewick.calllogger.models.CallItem;
-import com.pewick.calllogger.models.NumberItem;
 
 import java.util.ArrayList;
 

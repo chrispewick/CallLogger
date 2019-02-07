@@ -1,20 +1,12 @@
 package com.pewick.calllogger.fragments;
 
-import android.Manifest;
-import android.content.ContentProviderClient;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.RemoteException;
-import android.provider.ContactsContract;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.util.LongSparseArray;
+
+import androidx.fragment.app.Fragment;
+import androidx.core.content.ContextCompat;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -32,7 +24,6 @@ import com.pewick.calllogger.models.CallItem;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 
 /**
  * Fragment containing a list of all calls. From the MainActivity, the list can be searched, or

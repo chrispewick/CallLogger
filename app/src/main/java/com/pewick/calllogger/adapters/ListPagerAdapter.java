@@ -1,16 +1,13 @@
 package com.pewick.calllogger.adapters;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.util.Log;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+
 import android.view.ViewGroup;
 
 import com.pewick.calllogger.fragments.NumbersFragment;
 import com.pewick.calllogger.fragments.HistoryFragment;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Custom FragmentPagerAdapter for the view pager containing the NumbersFragment and the
