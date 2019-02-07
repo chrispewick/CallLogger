@@ -2,9 +2,8 @@ package com.pewick.calllogger.adapters;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.support.v4.content.ContextCompat;
+
+import androidx.core.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +12,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.pewick.calllogger.R;
-import com.pewick.calllogger.database.DataContract;
 import com.pewick.calllogger.models.NumberItem;
 
-import org.w3c.dom.Text;
-
-import java.io.InputStream;
 import java.util.ArrayList;
 
 /**

@@ -10,14 +10,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.provider.ContactsContract;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 import android.util.Log;
 
 import com.pewick.calllogger.models.CallItem;
 import com.pewick.calllogger.models.NumberItem;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 
 /**
  * A helper class to manage database creation and version management.
